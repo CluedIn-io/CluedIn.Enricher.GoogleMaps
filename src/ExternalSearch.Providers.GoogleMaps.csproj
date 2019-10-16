@@ -21,10 +21,6 @@
     <PackageReference Include="CluedIn.Core" Version="2.4.0-alpha0103" />
     <PackageReference Include="domainname-parser" Version="999.1.15" />
     <PackageReference Include="EntityFramework" Version="6.1.2" />
-    <PackageReference Include="Microsoft.Bcl" Version="1.1.10" />
-    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
-    <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
-    <PackageReference Include="Microsoft.Bcl.Compression" Version="3.9.85" />
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="RestSharp" Version="105.2.3" />
@@ -38,8 +34,5 @@
     <PackageReference Include="CluedIn.ExternalSearch" Version="2.4.0-alpha0100" />
     <PackageReference Include="MediaToolkit" Version="1.1.0.1" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Backup\" />
   </ItemGroup>
 </Project>
