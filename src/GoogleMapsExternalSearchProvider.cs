@@ -164,7 +164,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             if (query.QueryParameters.ContainsKey("companyName") && query.QueryParameters.ContainsKey("companyAddress"))
             {
-                var input = new {
+                var input = new
+                {
                     name = query.QueryParameters["companyName"].FirstOrDefault(),
                     address = query.QueryParameters["companyAddress"].FirstOrDefault()
                 };
