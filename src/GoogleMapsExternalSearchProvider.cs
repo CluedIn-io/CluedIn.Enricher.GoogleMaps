@@ -91,7 +91,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var organizationName = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.OrganizationName, new HashSet<string>());
             var organizationAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address, new HashSet<string>());
 
-            var locationName = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressNameStreet, new HashSet<string>());
+            var locationName = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.Address, new HashSet<string>());
             var latitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLattitude, new HashSet<string>());
             var longitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLongitude, new HashSet<string>());
 
@@ -127,20 +127,20 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             {
                 foreach (var locationNameValue in locationName.Where(v => !AddressFilter(v)))
                 {
-                    foreach (var locationLattitudeValue in latitude)
-                    {
-                        foreach (var locationLongitudeValue in longitude)
-                        {
+                    //foreach (var locationLattitudeValue in latitude)
+                    //{
+                    //    foreach (var locationLongitudeValue in longitude)
+                        //{
                             var locationDict = new Dictionary<string, string>
                             {
                                 {"locationName", locationNameValue },
-                                {"coordinates",  $"{locationLattitudeValue}, {locationLongitudeValue}"}
+                                //{"coordinates",  $"{locationLattitudeValue}, {locationLongitudeValue}"}
                             };
 
                             yield return new ExternalSearchQuery(this, entityType, locationDict);
-                        }
+                        //}
 
-                    }
+                    //}
                 }
             }
         }
@@ -176,11 +176,21 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
             else
             {
-                var locationName = string.Join("", query.QueryParameters["locationName"]);
-                var transformedCoordinates = string.Join("", query.QueryParameters["coordinates"]);
-                var splitCoordinates = transformedCoordinates.Split(',');
-                placeIdRequest.AddParameter("input", locationName);
-                placeIdRequest.AddParameter("locationbias", $"point:{splitCoordinates[0]}, {splitCoordinates[1]}");
+                if (query.QueryParameters.ContainsKey("locationName"))
+                {
+                    placeIdRequest.AddParameter("input", query.QueryParameters["locationName"].First());
+                }
+                if (query.QueryParameters.ContainsKey("coordinates"))
+                {
+                    var transformedCoordinates = string.Join("", query.QueryParameters["coordinates"]);
+                    var splitCoordinates = transformedCoordinates.Split(',');
+                    placeIdRequest.AddParameter("locationbias", $"point:{splitCoordinates[0]}, {splitCoordinates[1]}");
+                }
+                //var locationName = string.Join("", query.QueryParameters["locationName"]);
+                //var transformedCoordinates = string.Join("", query.QueryParameters["coordinates"]);
+                //var splitCoordinates = transformedCoordinates.Split(',');
+                //placeIdRequest.AddParameter("input", locationName);
+                //placeIdRequest.AddParameter("locationbias", $"point:{splitCoordinates[0]}, {splitCoordinates[1]}");
                 placeIdRequest.AddParameter("inputtype", "textquery");
             }
 
@@ -249,11 +259,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             if (result is IExternalSearchQueryResult<LocationDetailsResponse> locationDetailsResult)
             {
 
-                var code = this.GetLocationOriginEntityCode(locationDetailsResult);
+                var code = this.GetLocationOriginEntityCode(locationDetailsResult, request);
 
                 var clue = new Clue(code, context.Organization);
+                clue.Data.EntityData.Codes.Add(request.EntityMetaData.Codes.First());
 
-                this.PopulateLocationMetadata(clue.Data.EntityData, locationDetailsResult);
+                this.PopulateLocationMetadata(clue.Data.EntityData, locationDetailsResult, request);
 
                 // TODO: If necessary, you can create multiple clues and return them.
 
@@ -266,7 +277,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
                 var clue = new Clue(code, context.Organization);
 
-                this.PopulateCompanyMetadata(clue.Data.EntityData, companyResult);
+                this.PopulateCompanyMetadata(clue.Data.EntityData, companyResult, request);
 
                 // TODO: If necessary, you can create multiple clues and return them.
 
@@ -288,11 +299,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             if (result is IExternalSearchQueryResult<LocationDetailsResponse> locationResult)
             {
-                return this.CreateLocationMetadata(locationResult);
+                return this.CreateLocationMetadata(locationResult, request);
             }
             else if (result is IExternalSearchQueryResult<CompanyDetailsResponse> companyResult)
             {
-                return this.CreateCompanyMetadata(companyResult);
+                return this.CreateCompanyMetadata(companyResult, request);
             }
             return null;
         }
@@ -310,20 +321,20 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         /// <summary>Creates the metadata.</summary>
         /// <param name="resultItem">The result item.</param>
         /// <returns>The metadata.</returns>
-        private IEntityMetadata CreateLocationMetadata(IExternalSearchQueryResult<LocationDetailsResponse> resultItem)
+        private IEntityMetadata CreateLocationMetadata(IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
             var metadata = new EntityMetadataPart();
 
-            this.PopulateLocationMetadata(metadata, resultItem);
+            this.PopulateLocationMetadata(metadata, resultItem, request);
 
             return metadata;
         }
 
-        private IEntityMetadata CreateCompanyMetadata(IExternalSearchQueryResult<CompanyDetailsResponse> resultItem)
+        private IEntityMetadata CreateCompanyMetadata(IExternalSearchQueryResult<CompanyDetailsResponse> resultItem, IExternalSearchRequest request)
         {
             var metadata = new EntityMetadataPart();
 
-            this.PopulateCompanyMetadata(metadata, resultItem);
+            this.PopulateCompanyMetadata(metadata, resultItem, request);
 
             return metadata;
         }
@@ -332,10 +343,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         /// <summary>Gets the origin entity code.</summary>
         /// <param name="resultItem">The result item.</param>
         /// <returns>The origin entity code.</returns>
-        private EntityCode GetLocationOriginEntityCode(IExternalSearchQueryResult<LocationDetailsResponse> resultItem)
+        private EntityCode GetLocationOriginEntityCode(IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
             var originCode = $"{resultItem.Data.Result.Geometry.Location.Lat}, {resultItem.Data.Result.Geometry.Location.Lng}";
-            return new EntityCode(EntityType.Location, this.GetCodeOrigin(), originCode);
+            return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), originCode);
         }
 
         private EntityCode GetOrganizationOriginEntityCode(IExternalSearchQueryResult<CompanyDetailsResponse> resultItem)
@@ -354,15 +365,15 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         /// <summary>Populates the metadata.</summary>
         /// <param name="metadata">The metadata.</param>
         /// <param name="resultItem">The result item.</param>
-        private void PopulateLocationMetadata(IEntityMetadata metadata, IExternalSearchQueryResult<LocationDetailsResponse> resultItem)
+        private void PopulateLocationMetadata(IEntityMetadata metadata, IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
-            var code = this.GetLocationOriginEntityCode(resultItem);
+            var code = this.GetLocationOriginEntityCode(resultItem, request);
 
-            metadata.EntityType = EntityType.Location;
-            metadata.Name = resultItem.Data.Result.Name;
+            metadata.EntityType = request.EntityMetaData.EntityType;
+            metadata.Name = request.EntityMetaData.Name;
             metadata.OriginEntityCode = code;
 
-            metadata.Properties[GoogleMapsVocabulary.Location.ComponentsAddress] = JsonUtility.Serialize(resultItem.Data.Result.AddressComponents);
+            //metadata.Properties[GoogleMapsVocabulary.Location.ComponentsAddress] = JsonUtility.Serialize(resultItem.Data.Result.AddressComponents);
             foreach (var component in resultItem.Data.Result.AddressComponents)
             {
                 switch (component.Types.First())
@@ -397,12 +408,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             metadata.Codes.Add(code);
         }
 
-        private void PopulateCompanyMetadata(IEntityMetadata metadata, IExternalSearchQueryResult<CompanyDetailsResponse> resultItem)
+        private void PopulateCompanyMetadata(IEntityMetadata metadata, IExternalSearchQueryResult<CompanyDetailsResponse> resultItem, IExternalSearchRequest request)
         {
             var code = this.GetOrganizationOriginEntityCode(resultItem);
 
             metadata.EntityType = EntityType.Organization;
-            metadata.Name = resultItem.Data.Result.Name;
+            metadata.Name = request.EntityMetaData.Name;
             metadata.OriginEntityCode = code;
 
             metadata.Properties[GoogleMapsVocabulary.Organization.AddressComponents] = JsonUtility.Serialize(resultItem.Data.Result.AddressComponents);
