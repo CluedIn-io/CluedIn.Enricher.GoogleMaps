@@ -401,7 +401,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
 
             metadata.Properties[GoogleMapsVocabulary.Location.Name] = resultItem.Data.Result.Name.PrintIfAvailable();
-            metadata.Properties[GoogleMapsVocabulary.Location.Geometry] = JsonUtility.Serialize(resultItem.Data.Result.Geometry);
+            //metadata.Properties[GoogleMapsVocabulary.Location.Geometry] = JsonUtility.Serialize(resultItem.Data.Result.Geometry);
             metadata.Properties[GoogleMapsVocabulary.Location.Latitude] = resultItem.Data.Result.Geometry.Location.Lat;
             metadata.Properties[GoogleMapsVocabulary.Location.Longitude] = resultItem.Data.Result.Geometry.Location.Lng;
             metadata.Properties[GoogleMapsVocabulary.Location.FormattedAddress] = resultItem.Data.Result.FormattedAddress.PrintIfAvailable();
@@ -416,7 +416,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             metadata.Name = request.EntityMetaData.Name;
             metadata.OriginEntityCode = code;
 
-            metadata.Properties[GoogleMapsVocabulary.Organization.AddressComponents] = JsonUtility.Serialize(resultItem.Data.Result.AddressComponents);
+            //metadata.Properties[GoogleMapsVocabulary.Organization.AddressComponents] = JsonUtility.Serialize(resultItem.Data.Result.AddressComponents);
             foreach (var component in resultItem.Data.Result.AddressComponents)
             {
                 switch (component.Types.First())
@@ -449,10 +449,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             metadata.Properties[GoogleMapsVocabulary.Organization.Name] = resultItem.Data.Result.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.OpeningHours] = resultItem.Data.Result.OpeningHours.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.PlaceId] = resultItem.Data.Result.PlaceId.PrintIfAvailable();
-            metadata.Properties[GoogleMapsVocabulary.Organization.PlusCode] = JsonUtility.Serialize(resultItem.Data.Result.PlusCode);
+            //metadata.Properties[GoogleMapsVocabulary.Organization.PlusCode] = JsonUtility.Serialize(resultItem.Data.Result.PlusCode);
             metadata.Properties[GoogleMapsVocabulary.Organization.Rating] = resultItem.Data.Result.Rating.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Reference] = resultItem.Data.Result.Reference.PrintIfAvailable();
-            metadata.Properties[GoogleMapsVocabulary.Organization.Reviews] = JsonUtility.Serialize(resultItem.Data.Result.Reviews);
+            //metadata.Properties[GoogleMapsVocabulary.Organization.Reviews] = JsonUtility.Serialize(resultItem.Data.Result.Reviews);
             metadata.Properties[GoogleMapsVocabulary.Organization.Scope] = resultItem.Data.Result.Scope.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Types] = resultItem.Data.Result.Types.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Url] = resultItem.Data.Result.Url.PrintIfAvailable();
