@@ -91,7 +91,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var organizationName = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.OrganizationName, new HashSet<string>());
             var organizationAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address, new HashSet<string>());
 
-            var locationName = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.Address, new HashSet<string>());
+            var locationAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.Address, new HashSet<string>());
+            var userAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInUser.HomeAddress, new HashSet<string>());
+            var personAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInPerson.HomeAddress, new HashSet<string>());
+
+
             var latitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLattitude, new HashSet<string>());
             var longitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLongitude, new HashSet<string>());
 
@@ -123,9 +127,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Name, value);
             }
 
-            if (locationName != null)
+            if (locationAddress != null)
             {
-                foreach (var locationNameValue in locationName.Where(v => !AddressFilter(v)))
+                foreach (var locationNameValue in locationAddress.Where(v => !AddressFilter(v)))
                 {
                     //foreach (var locationLattitudeValue in latitude)
                     //{
@@ -133,7 +137,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         //{
                             var locationDict = new Dictionary<string, string>
                             {
-                                {"locationName", locationNameValue },
+                                {"locationName", locationNameValue }
                                 //{"coordinates",  $"{locationLattitudeValue}, {locationLongitudeValue}"}
                             };
 
@@ -141,6 +145,30 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         //}
 
                     //}
+                }
+            }
+            if (personAddress != null)
+            {
+                foreach (var locationNameValue in personAddress.Where(v => !AddressFilter(v)))
+                {
+                    var locationDict = new Dictionary<string, string>
+                    {
+                        {"locationName", locationNameValue }
+                    };
+
+                    yield return new ExternalSearchQuery(this, entityType, locationDict);
+                }
+            }
+            if (userAddress != null)
+            {
+                foreach (var locationNameValue in userAddress.Where(v => !AddressFilter(v)))
+                {
+                    var locationDict = new Dictionary<string, string>
+                    {
+                        {"locationName", locationNameValue }
+                    };
+
+                    yield return new ExternalSearchQuery(this, entityType, locationDict);
                 }
             }
         }
