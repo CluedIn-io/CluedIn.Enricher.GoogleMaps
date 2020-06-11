@@ -31,7 +31,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
          **********************************************************************************************************/
 
         public GoogleMapsExternalSearchProvider()
-            : base(ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization, EntityType.Location.Address, EntityType.Infrastructure.User })
+            : base(ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization, EntityType.Location.Address, EntityType.Infrastructure.User, EntityType.Person })
         {
             var nameBasedTokenProvider = new NameBasedTokenProvider("GoogleMaps");
 
