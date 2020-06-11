@@ -241,13 +241,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         if (response.Data != null)
                             yield return new ExternalSearchQueryResult<LocationDetailsResponse>(query, response.Data);
 
-                        else if (response.StatusCode == HttpStatusCode.NoContent || response.StatusCode == HttpStatusCode.NotFound)
-                            yield break;
-                        else if (response.ErrorException != null)
-                            throw new AggregateException(response.ErrorException.Message, response.ErrorException);
-                        else
-                            throw new ApplicationException("Could not execute external search query - StatusCode:" + response.StatusCode + "; Content: " + response.Content);
                     }
+                    else if (response.StatusCode == HttpStatusCode.NoContent || response.StatusCode == HttpStatusCode.NotFound)
+                        yield break;
+                    else if (response.ErrorException != null)
+                        throw new AggregateException(response.ErrorException.Message, response.ErrorException);
+                    else
+                        throw new ApplicationException("Could not execute external search query - StatusCode:" + response.StatusCode + "; Content: " + response.Content);
                 }
                 else
                 {
