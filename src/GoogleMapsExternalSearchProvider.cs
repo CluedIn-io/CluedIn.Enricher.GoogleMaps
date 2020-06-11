@@ -373,8 +373,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         /// <returns>The origin entity code.</returns>
         private EntityCode GetLocationOriginEntityCode(IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
-            var originCode = $"{resultItem.Data.Result.Geometry.Location.Lat}, {resultItem.Data.Result.Geometry.Location.Lng}";
-            return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), originCode);
+            return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), resultItem.Id);
         }
 
         private EntityCode GetOrganizationOriginEntityCode(IExternalSearchQueryResult<CompanyDetailsResponse> resultItem)
