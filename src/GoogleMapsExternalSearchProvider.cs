@@ -101,7 +101,35 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 			var latitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLattitude, new HashSet<string>());
 			var longitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLongitude, new HashSet<string>());
 
-			if (organizationName != null && organizationName.Count > 0 && organizationAddress != null && organizationAddress.Count > 0)
+			if (organizationName != null && organizationName.Count > 0
+				&& organizationAddress != null && organizationAddress.Count > 0
+				&& organizationZip != null && organizationZip.Count > 0
+				&& organizationState != null && organizationState.Count > 0
+				&& organizationCountry != null && organizationCountry.Count > 0)
+			{
+				foreach (var nameValue in organizationName.Where(v => !NameFilter(v)))
+				{
+					foreach (var addressValue in organizationAddress.Where(v => !AddressFilter(v)))
+					{
+						foreach (var zipValue in organizationZip.Where(v => !AddressFilter(v)))
+						{
+							foreach (var stateValue in organizationState.Where(v => !AddressFilter(v)))
+							{
+								foreach (var countryValue in organizationCountry.Where(v => !AddressFilter(v)))
+								{
+									var companyDict = new Dictionary<string, string>
+									{
+										{"companyName", nameValue },
+										{"companyAddress", $"{addressValue}, {zipValue}, {stateValue}, {countryValue}" }
+									};
+									yield return new ExternalSearchQuery(this, entityType, companyDict);
+								}
+							}
+						}
+					}
+				}
+			}
+			else if (organizationName != null && organizationName.Count > 0 && organizationAddress != null && organizationAddress.Count > 0)
 			{
 				foreach (var nameValue in organizationName.Where(v => !NameFilter(v)))
 				{
