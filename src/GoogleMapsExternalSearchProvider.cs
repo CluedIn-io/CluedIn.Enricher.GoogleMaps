@@ -84,8 +84,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 			}
 
 			var entityType = request.EntityMetaData.EntityType;
+
 			var organizationName = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.OrganizationName, new HashSet<string>());
 			var organizationAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address, new HashSet<string>());
+			var organizationZip = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressZipCode, new HashSet<string>());
+			var organizationState = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressState, new HashSet<string>());
+			var organizationCountry = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName, new HashSet<string>());
 
 			var locationAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.Address, new HashSet<string>());
 
