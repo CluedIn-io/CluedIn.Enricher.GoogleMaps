@@ -92,9 +92,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var organizationAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address, new HashSet<string>());
 
             var locationAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.Address, new HashSet<string>());
-            var userAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInUser.HomeAddress, new HashSet<string>());
-            var personAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInPerson.HomeAddress, new HashSet<string>());
 
+            var userAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInUser.HomeAddress, new HashSet<string>());
+
+            var personAddress = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInPerson.HomeAddress, new HashSet<string>());
+            var personAddressCity = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInPerson.HomeAddressCity, new HashSet<string>());
 
             var latitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLattitude, new HashSet<string>());
             var longitude = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLongitude, new HashSet<string>());
@@ -147,16 +149,34 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     //}
                 }
             }
-            if (personAddress != null)
+
+
+            if (personAddress != null && personAddressCity != null)
             {
                 foreach (var locationNameValue in personAddress.Where(v => !AddressFilter(v)))
                 {
-                    var locationDict = new Dictionary<string, string>
+                    foreach (var locationCityValue in personAddressCity.Where(v => !AddressFilter(v)))
                     {
-                        {"locationName", locationNameValue }
-                    };
 
-                    yield return new ExternalSearchQuery(this, entityType, locationDict);
+                        var locationDict = new Dictionary<string, string>
+                        {
+                            {"locationName", $"{locationNameValue}, {locationCityValue}" }
+                        };
+
+                        yield return new ExternalSearchQuery(this, entityType, locationDict);
+                    }
+                }
+            }
+            else if (personAddress != null)
+            {
+                foreach (var locationNameValue in personAddress.Where(v => !AddressFilter(v)))
+                {
+                        var locationDict = new Dictionary<string, string>
+                        {
+                            {"locationName", locationNameValue }
+                        };
+
+                        yield return new ExternalSearchQuery(this, entityType, locationDict);
                 }
             }
             if (userAddress != null)
