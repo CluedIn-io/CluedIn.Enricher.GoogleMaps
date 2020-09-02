@@ -129,21 +129,21 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 					yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Name, value);
 			}
 
-			if (locationAddress != null)
+			if (locationAddress != null && locationAddress.Count > 0)
 			{
 				foreach (var locationNameValue in locationAddress.Where(v => !AddressFilter(v)))
 				{
 					var locationDict = new Dictionary<string, string>
 							{
 								{"locationName", locationNameValue }
-                            };
+							};
 
 					yield return new ExternalSearchQuery(this, entityType, locationDict);
 				}
 			}
 
 
-			if (personAddress != null && personAddressCity != null)
+			if (personAddress != null && personAddress.Count > 0 && personAddressCity != null && personAddressCity.Count > 0)
 			{
 				foreach (var locationNameValue in personAddress.Where(v => !AddressFilter(v)))
 				{
@@ -159,7 +159,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 					}
 				}
 			}
-			else if (personAddress != null)
+			else if (personAddress != null && personAddress.Count > 0)
 			{
 				foreach (var locationNameValue in personAddress.Where(v => !AddressFilter(v)))
 				{
@@ -171,7 +171,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 					yield return new ExternalSearchQuery(this, entityType, locationDict);
 				}
 			}
-			if (userAddress != null)
+			if (userAddress != null && userAddress.Count > 0)
 			{
 				foreach (var locationNameValue in userAddress.Where(v => !AddressFilter(v)))
 				{
