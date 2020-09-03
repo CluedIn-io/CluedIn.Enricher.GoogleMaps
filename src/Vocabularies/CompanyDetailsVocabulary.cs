@@ -23,7 +23,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
                 this.AdrAddress = group.Add(new VocabularyKey("AdrAddress", VocabularyKeyDataType.Html, VocabularyKeyVisibility.Visible));
                 this.FormattedAddress = group.Add(new VocabularyKey("FormattedAddress", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
                 this.FormattedPhoneNumber = group.Add(new VocabularyKey("FormattedPhoneNumber", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
-                this.Geometry = group.Add(new VocabularyKey("Geometry", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Visible));
+                //this.Geometry = group.Add(new VocabularyKey("Geometry", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Visible));
                 this.Icon = group.Add(new VocabularyKey("Icon", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
                 this.Id = group.Add(new VocabularyKey("Id", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
                 this.InternationalPhoneNumber = group.Add(new VocabularyKey("InternationalPhoneNumber", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
@@ -36,11 +36,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
                 this.Reviews = group.Add(new VocabularyKey("Reviews", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
                 this.Scope = group.Add(new VocabularyKey("Scope", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
                 this.Types = group.Add(new VocabularyKey("Types", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
-                this.Url = group.Add(new VocabularyKey("Url", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
+                this.Url = group.Add(new VocabularyKey("Url", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
                 this.UserRatingsTotal = group.Add(new VocabularyKey("UserRatingsTotal", VocabularyKeyDataType.Integer, VocabularyKeyVisibility.Hidden));
-                this.UtcOffset = group.Add(new VocabularyKey("UtcOffset", VocabularyKeyDataType.Integer, VocabularyKeyVisibility.Hidden));
+                this.UtcOffset = group.Add(new VocabularyKey("UtcOffset", VocabularyKeyDataType.Integer, VocabularyKeyVisibility.Visible));
                 this.Vicinity = group.Add(new VocabularyKey("Vicinity", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
                 this.Website = group.Add(new VocabularyKey("Website", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.Latitude = group.Add(new VocabularyKey("Latitude", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Visible));
+                this.Longitude = group.Add(new VocabularyKey("Longitude", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Visible));
 
             });
 
@@ -50,7 +52,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
             this.AddMapping(this.CityName, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCity);
             this.AddMapping(this.CountryCode, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryCode);
             this.AddMapping(this.PostalCode, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressZipCode);
-            this.AddMapping(this.FormattedPhoneNumber, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.PhoneNumber);
+            this.AddMapping(this.InternationalPhoneNumber, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.PhoneNumber);
+            this.AddMapping(this.Latitude, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLattitude);
+            this.AddMapping(this.Longitude, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLongitude);
         }
 
         public VocabularyKey AddressComponents { get; set; }
@@ -62,7 +66,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
         public VocabularyKey AdrAddress { get; set; }
         public VocabularyKey FormattedAddress { get; set; }
         public VocabularyKey FormattedPhoneNumber { get; set; }
-        public VocabularyKey Geometry { get; set; }
+        //public VocabularyKey Geometry { get; set; }
         public VocabularyKey Icon { get; set; }
         public VocabularyKey Id { get; set; }
         public VocabularyKey InternationalPhoneNumber { get; set; }
@@ -80,6 +84,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
         public VocabularyKey UtcOffset { get; set; }
         public VocabularyKey Vicinity { get; set; }
         public VocabularyKey Website { get; set; }
+        public VocabularyKey Latitude { get; set; }
+        public VocabularyKey Longitude { get; set; }
     }
 
 }
