@@ -68,8 +68,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
 			//var entityType = request.EntityMetaData.EntityType;
 
-			if (string.IsNullOrEmpty(this.TokenProvider.ApiToken))
-				throw new InvalidOperationException("GoogleMaps ApiToken have not been configured");
+			//if (string.IsNullOrEmpty(this.TokenProvider.ApiToken))
+			//	throw new InvalidOperationException("GoogleMaps ApiToken have not been configured");
 
 			var existingResults = request.GetQueryResults<CompanyDetailsResponse>(this).ToList();
 
@@ -226,9 +226,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 			var output = "json";
 			var placeDetailsEndpoint = $"place/details/{output}?";
 			var placeIdEndpoint = $"place/findplacefromtext/{output}?";
-			//var apiKey = "AIzaSyA8oZKYh7NT4bX_yZl8vKIMdecoQCHJC4I";
+			var apiKey = "AIzaSyA237HReRh75SC0WLHSQudNh9n-gc-WLjY";
 			var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
-			placeIdRequest.AddParameter("key", this.TokenProvider.ApiToken);
+			placeIdRequest.AddParameter("key", apiKey);
 
 			if (query.QueryParameters.ContainsKey("companyName") && query.QueryParameters.ContainsKey("companyAddress"))
 			{
@@ -271,7 +271,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 					foreach (var placeId in placeIdResponse.Data.Candidates)
 					{
 						request.AddParameter("placeid", placeId.PlaceId);
-						request.AddParameter("key", this.TokenProvider.ApiToken);
+						request.AddParameter("key", apiKey);
 						request.AddParameter("fields", "name,formatted_address,address_component,adr_address,geometry");
 					}
 					var response = client.ExecuteTaskAsync<LocationDetailsResponse>(request).Result;
@@ -295,7 +295,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 					foreach (var placeId in placeIdResponse.Data.Candidates)
 					{
 						request.AddParameter("placeid", placeId.PlaceId);
-						request.AddParameter("key", this.TokenProvider.ApiToken);
+						request.AddParameter("key", apiKey);
 					}
 					var response = client.ExecuteTaskAsync<CompanyDetailsResponse>(request).Result;
 
@@ -366,11 +366,17 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
 			if (result is IExternalSearchQueryResult<LocationDetailsResponse> locationResult)
 			{
-				return this.CreateLocationMetadata(locationResult, request);
+				if (locationResult.Data.Result != null)
+				{
+					return this.CreateLocationMetadata(locationResult, request);
+				}
 			}
 			else if (result is IExternalSearchQueryResult<CompanyDetailsResponse> companyResult)
 			{
-				return this.CreateCompanyMetadata(companyResult, request);
+				if (companyResult.Data.Result != null)
+				{
+					return this.CreateCompanyMetadata(companyResult, request);
+				}
 			}
 			return null;
 		}
@@ -418,7 +424,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 		private EntityCode GetOrganizationOriginEntityCode(IExternalSearchQueryResult<CompanyDetailsResponse> resultItem)
 		{
 
-			return new EntityCode(EntityType.Organization, this.GetCodeOrigin(), resultItem.Data.Result.Id);
+			return new EntityCode(EntityType.Organization, this.GetCodeOrigin(), resultItem.Id);
 		}
 
 		/// <summary>Gets the code origin.</summary>
