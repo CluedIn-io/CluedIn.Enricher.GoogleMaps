@@ -20,7 +20,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
                 this.Geometry = group.Add(new VocabularyKey("Geometry", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
                 this.Latitude = group.Add(new VocabularyKey("Latitude", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Hidden));
                 this.Longitude = group.Add(new VocabularyKey("Longitude", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Hidden));
-                this.Name = group.Add(new VocabularyKey("namE", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.Name = group.Add(new VocabularyKey("Name", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
                 this.NameStreet = group.Add(new VocabularyKey("NameStreet", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
                 this.NumberStreet = group.Add(new VocabularyKey("NumberStreet", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
                 this.NameCity = group.Add(new VocabularyKey("NameCity", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
@@ -33,6 +33,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
             this.AddMapping(this.FormattedAddress, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.Address);
             this.AddMapping(this.Latitude, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLattitude);
             this.AddMapping(this.Longitude, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLongitude);
+            this.AddMapping(this.NameStreet, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressNameStreet);
+            this.AddMapping(this.NumberStreet, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressStreetNumber);
+            this.AddMapping(this.NameCity, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressCity);
+            this.AddMapping(this.CodeCountry, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressCountryCode);
+            this.AddMapping(this.CodePostal, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressZipCode);
 
         }
 
