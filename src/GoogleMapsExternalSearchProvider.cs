@@ -8,11 +8,11 @@ using CluedIn.ExternalSearch.Providers.GoogleMaps.Models.Companies;
 using CluedIn.ExternalSearch.Providers.GoogleMaps.Models.Locations;
 using CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies;
 using RestSharp;
-using RestSharp.Extensions.MonoHttp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Web;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
