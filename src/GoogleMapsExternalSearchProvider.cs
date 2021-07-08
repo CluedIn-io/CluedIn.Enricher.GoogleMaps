@@ -263,6 +263,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
 
             var placeIdResponse = client.ExecuteTaskAsync<PlaceIdResponse>(placeIdRequest).Result;
+            if (placeIdResponse.Data.Status.Equals("REQUEST_DENIED"))
+            {
+                yield break;
+            }
+
             if (placeIdResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (placeIdResponse.Data != null && isCompany == false)
@@ -275,6 +280,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         request.AddParameter("fields", "name,formatted_address,address_component,adr_address,geometry");
                     }
                     var response = client.ExecuteTaskAsync<LocationDetailsResponse>(request).Result;
+                    if (response.Data.Status.Equals("REQUEST_DENIED"))
+                    {
+                        yield break;
+                    }
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
@@ -298,6 +307,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         request.AddParameter("key", apiKey);
                     }
                     var response = client.ExecuteTaskAsync<CompanyDetailsResponse>(request).Result;
+                    if (response.Data.Status.Equals("REQUEST_DENIED"))
+                    {
+                        yield break;
+                    }
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
