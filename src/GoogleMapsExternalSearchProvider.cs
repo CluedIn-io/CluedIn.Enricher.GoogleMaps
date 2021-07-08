@@ -226,7 +226,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var output = "json";
             var placeDetailsEndpoint = $"place/details/{output}?";
             var placeIdEndpoint = $"place/findplacefromtext/{output}?";
-            var apiKey = "AIzaSyA237HReRh75SC0WLHSQudNh9n-gc-WLjY";
+            var apiKey = this.TokenProvider.ApiToken;
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
             placeIdRequest.AddParameter("key", apiKey);
 
