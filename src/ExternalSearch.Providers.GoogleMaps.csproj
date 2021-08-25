@@ -1,5 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <None Remove="Resources\Google_Maps_icon_2020.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Google_Maps_icon_2020.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="CluedIn.ExternalSearch" />
     <PackageReference Include="CluedIn.Crawling" />
     <PackageReference Include="CluedIn.Core" />

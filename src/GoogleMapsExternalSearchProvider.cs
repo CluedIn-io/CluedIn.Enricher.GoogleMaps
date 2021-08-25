@@ -13,12 +13,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
+using CluedIn.Core.Data.Relational;
+using CluedIn.Core.Providers;
+using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
     /// <summary>The googlemaps graph external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase
+    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata
     {
         public static readonly Guid ProviderId = Guid.Parse("7999344b-2ee6-462a-886a-a630b169117c");   // TODO: Replace value
 
@@ -553,5 +556,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
         }
 
+        public string Icon { get; } = "Resources.Google_Maps_icon_2020.svg";
+        public string Domain { get; } = "N/A";
+        public string About { get; } = "Google Maps is a web mapping platform and consumer application offered by Google. It offers satellite imagery, aerial photography, street maps, 360° interactive panoramic views of streets, real-time traffic conditions, and route planning for traveling by foot, car, air and public transportation.";
+        public AuthMethods AuthMethods { get; } = null;
+        public IEnumerable<Control> Properties { get; } = null;
+        public Guide Guide { get; } = null;
+        public IntegrationType Type { get; } = IntegrationType.Cloud;
     }
 }
