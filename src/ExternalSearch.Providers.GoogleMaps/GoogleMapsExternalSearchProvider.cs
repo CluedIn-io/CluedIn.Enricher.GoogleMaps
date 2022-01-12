@@ -21,16 +21,17 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
     /// <summary>The googlemaps graph external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata
+    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
     {
-        public static readonly Guid ProviderId = Guid.Parse("7999344b-2ee6-462a-886a-a630b169117c");   // TODO: Replace value
+        public static readonly Guid ProviderId = Guid.Parse("7999344b-2ee6-462a-886a-a630b169117c");
+        private static readonly EntityType[] AcceptedEntityTypes = { EntityType.Location, EntityType.Organization, EntityType.Location.Address, EntityType.Infrastructure.User, EntityType.Person };
 
         /**********************************************************************************************************
          * CONSTRUCTORS
          **********************************************************************************************************/
 
         public GoogleMapsExternalSearchProvider()
-            : base(ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization, EntityType.Location.Address, EntityType.Infrastructure.User, EntityType.Person })
+            : base(ProviderId, AcceptedEntityTypes)
         {
             var nameBasedTokenProvider = new NameBasedTokenProvider("GoogleMaps");
 
@@ -556,12 +557,43 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
         }
 
-        public string Icon { get; } = "Resources.Google_Maps_icon_2020.svg";
-        public string Domain { get; } = "N/A";
-        public string About { get; } = "Google Maps is a web mapping platform and consumer application offered by Google. It offers satellite imagery, aerial photography, street maps, 360° interactive panoramic views of streets, real-time traffic conditions, and route planning for traveling by foot, car, air and public transportation.";
-        public AuthMethods AuthMethods { get; } = null;
-        public IEnumerable<Control> Properties { get; } = null;
-        public Guide Guide { get; } = null;
-        public IntegrationType Type { get; } = IntegrationType.Cloud;
+        public string Icon { get; } = GoogleMapsConstants.Icon;
+        public string Domain { get; } = GoogleMapsConstants.Domain;
+        public string About { get; } = GoogleMapsConstants.About;
+
+        public AuthMethods AuthMethods { get; } = GoogleMapsConstants.AuthMethods;
+        public IEnumerable<Control> Properties { get; } = GoogleMapsConstants.Properties;
+        public Guide Guide { get; } = GoogleMapsConstants.Guide;
+        public IntegrationType Type { get; } = GoogleMapsConstants.IntegrationType;
+
+        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

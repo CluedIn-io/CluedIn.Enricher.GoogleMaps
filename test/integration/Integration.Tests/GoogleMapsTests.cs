@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using CluedIn.Core.Data;
 using CluedIn.Core.Data.Parts;
 using CluedIn.Core.Messages.Processing;
-using CluedIn.ExternalSearch;
 using CluedIn.ExternalSearch.Providers.GoogleMaps;
-using CluedIn.ExternalSearch.Providers.GoogleMaps.Models;
 using CluedIn.Testing.Base.ExternalSearch;
 using Moq;
 using Xunit;

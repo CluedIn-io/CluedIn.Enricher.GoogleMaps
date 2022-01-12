@@ -35,6 +35,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{02641789-0D38-4DBB-9288-23592CF55D25}"
 	ProjectSection(SolutionItems) = preProject
 		NuGet.config = NuGet.config
+		Packages.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Code Style", "Code Style", "{2C3AECCF-DCB5-4ED7-8B7B-8F373EDE3A5E}"
@@ -52,6 +53,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.GoogleMaps.I
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.Providers.GoogleMaps", "src\ExternalSearch.Providers.GoogleMaps\ExternalSearch.Providers.GoogleMaps.csproj", "{998CD3A8-DF37-4B8F-A519-D805D98E92B3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.Providers.GoogleMaps.Provider", "src\ExternalSearch.Providers.GoogleMaps.Provider\ExternalSearch.Providers.GoogleMaps.Provider.csproj", "{76FE5F98-D73D-4175-8936-42BDD012F0BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +69,10 @@ Global
 		{998CD3A8-DF37-4B8F-A519-D805D98E92B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{998CD3A8-DF37-4B8F-A519-D805D98E92B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{998CD3A8-DF37-4B8F-A519-D805D98E92B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76FE5F98-D73D-4175-8936-42BDD012F0BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76FE5F98-D73D-4175-8936-42BDD012F0BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76FE5F98-D73D-4175-8936-42BDD012F0BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76FE5F98-D73D-4175-8936-42BDD012F0BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +87,7 @@ Global
 		{17EE3C8D-BAE4-481A-B9CC-1BE878E86124} = {9BD54E81-D9C8-4419-82B8-8EE6CC7E2647}
 		{8CBDF6EB-A861-466E-932B-04CA5917923C} = {DBD1964B-DBD9-4C70-96CA-391C34B3D75F}
 		{998CD3A8-DF37-4B8F-A519-D805D98E92B3} = {B2A52533-7FBF-41FE-A0AF-874FC54300B2}
+		{76FE5F98-D73D-4175-8936-42BDD012F0BE} = {B2A52533-7FBF-41FE-A0AF-874FC54300B2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A61CB42-80C5-4A83-AC3E-DA41FC875525}
