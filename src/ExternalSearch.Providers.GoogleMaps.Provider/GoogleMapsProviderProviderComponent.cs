@@ -8,7 +8,7 @@ using ComponentHost;
 
 namespace CluedIn.Provider.GoogleMaps
 {
-    [Component(GoogleMapsConstants.ProviderName, "Providers", ComponentType.Service, ServerComponents.ProviderWebApi, Components.Server, Components.DataStores, Isolation = ComponentIsolation.NotIsolated)]
+    [Component(GoogleMapsConstants.ComponentName, "Providers", ComponentType.Service, ServerComponents.ProviderWebApi, Components.Server, Components.DataStores, Isolation = ComponentIsolation.NotIsolated)]
     public sealed class GoogleMapsProviderProviderComponent : ServiceApplicationComponent<IServer>
     {
         /**********************************************************************************************************
@@ -33,7 +33,7 @@ namespace CluedIn.Provider.GoogleMaps
         /// <summary>Starts this instance.</summary>
         public override void Start()
         {
-            var asm = Assembly.GetExecutingAssembly();
+            var asm = Assembly.GetAssembly(typeof(GoogleMapsProviderProviderComponent));
             Container.Register(Types.FromAssembly(asm).BasedOn<IProvider>().WithServiceFromInterface().If(t => !t.IsAbstract).LifestyleSingleton());
             Container.Register(Types.FromAssembly(asm).BasedOn<IEntityActionBuilder>().WithServiceFromInterface().If(t => !t.IsAbstract).LifestyleSingleton());
 

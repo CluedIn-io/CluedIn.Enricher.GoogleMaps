@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CluedIn.Core.Data.Relational;
 using CluedIn.Core.Providers;
 
@@ -6,7 +7,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
     public static class GoogleMapsConstants
     {
-        public const string ProviderName = "GoogleMaps";
+        public const string ComponentName = "GoogleMaps";
+        public const string ProviderName = "Google Maps";
+        public static readonly Guid ProviderId = Guid.Parse("7999344b-2ee6-462a-886a-a630b169117c");
 
         public struct KeyName
         {
@@ -34,13 +37,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
         public static IEnumerable<Control> Properties { get; set; } = new List<Control>()
         {
-            new()
-            {
-                displayName = "Some Data",
-                type = "input",
-                isRequired = true,
-                name = "someData"
-            }
+            // NOTE: Leaving this commented as an example - BF
+            //new()
+            //{
+            //    displayName = "Some Data",
+            //    type = "input",
+            //    isRequired = true,
+            //    name = "someData"
+            //}
         };
 
         public static Guide Guide { get; set; } = null;

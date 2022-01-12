@@ -23,7 +23,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
     public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
     {
-        public static readonly Guid ProviderId = Guid.Parse("7999344b-2ee6-462a-886a-a630b169117c");
         private static readonly EntityType[] AcceptedEntityTypes = { EntityType.Location, EntityType.Organization, EntityType.Location.Address, EntityType.Infrastructure.User, EntityType.Person };
 
         /**********************************************************************************************************
@@ -31,7 +30,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
          **********************************************************************************************************/
 
         public GoogleMapsExternalSearchProvider()
-            : base(ProviderId, AcceptedEntityTypes)
+            : base(GoogleMapsConstants.ProviderId, AcceptedEntityTypes)
         {
             var nameBasedTokenProvider = new NameBasedTokenProvider("GoogleMaps");
 
@@ -52,7 +51,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         }
 
         private GoogleMapsExternalSearchProvider(bool tokenProviderIsRequired)
-            : base(ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization })
+            : base(GoogleMapsConstants.ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization })
         {
             this.TokenProviderIsRequired = tokenProviderIsRequired;
         }
@@ -236,7 +235,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var output = "json";
             var placeDetailsEndpoint = $"place/details/{output}?";
             var placeIdEndpoint = $"place/findplacefromtext/{output}?";
-
 
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
             placeIdRequest.AddParameter("key", apiKey);

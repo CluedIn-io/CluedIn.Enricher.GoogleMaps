@@ -16,19 +16,26 @@ namespace CluedIn.Provider.GoogleMaps
 {
     public class GoogleMapsSearchProviderProvider : ProviderBase, IExtendedProviderMetadata, IExternalSearchProviderProvider
     {
-        public IExternalSearchProvider ExternalSearchProvider { get; set; }
+        private IExternalSearchProvider _externalSearchProvider;
+
+        public IExternalSearchProvider ExternalSearchProvider
+        {
+            get => _externalSearchProvider;
+            set => _externalSearchProvider ??= value;
+        }
 
         public GoogleMapsSearchProviderProvider([System.Diagnostics.CodeAnalysis.NotNull] ApplicationContext appContext) : base(appContext, GetMetaData())
         {
-            ExternalSearchProvider = appContext.Container.ResolveAll<IExternalSearchProvider>().Single(n => n.Id == GoogleMapsExternalSearchProvider.ProviderId);
+            _externalSearchProvider = appContext.Container.ResolveAll<IExternalSearchProvider>().Single(n => n.Id == GoogleMapsConstants.ProviderId);
         }
 
         private static IProviderMetadata GetMetaData()
         {
             return new ProviderMetadata
             {
-                Id = GoogleMapsExternalSearchProvider.ProviderId,
+                Id = GoogleMapsConstants.ProviderId,
                 Name = GoogleMapsConstants.ProviderName,
+                ComponentName = GoogleMapsConstants.ComponentName,
                 AuthTypes = new List<string>(),
                 SupportsConfiguration = true,
                 SupportsAutomaticWebhookCreation = false,
