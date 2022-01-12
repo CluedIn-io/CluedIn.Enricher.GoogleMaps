@@ -30,7 +30,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
          **********************************************************************************************************/
 
         public GoogleMapsExternalSearchProvider()
-            : base(GoogleMapsConstants.ProviderId, AcceptedEntityTypes)
+            : base(Constants.ProviderId, AcceptedEntityTypes)
         {
             var nameBasedTokenProvider = new NameBasedTokenProvider("GoogleMaps");
 
@@ -51,7 +51,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         }
 
         private GoogleMapsExternalSearchProvider(bool tokenProviderIsRequired)
-            : base(GoogleMapsConstants.ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization })
+            : base(Constants.ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization })
         {
             this.TokenProviderIsRequired = tokenProviderIsRequired;
         }
@@ -596,14 +596,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             return GetPrimaryEntityPreviewImage(context, result, request);
         }
 
-        public string Icon { get; } = GoogleMapsConstants.Icon;
-        public string Domain { get; } = GoogleMapsConstants.Domain;
-        public string About { get; } = GoogleMapsConstants.About;
+        public string Icon { get; } = Constants.Icon;
+        public string Domain { get; } = Constants.Domain;
+        public string About { get; } = Constants.About;
 
-        public AuthMethods AuthMethods { get; } = GoogleMapsConstants.AuthMethods;
-        public IEnumerable<Control> Properties { get; } = GoogleMapsConstants.Properties;
-        public Guide Guide { get; } = GoogleMapsConstants.Guide;
-        public IntegrationType Type { get; } = GoogleMapsConstants.IntegrationType;
+        public AuthMethods AuthMethods { get; } = Constants.AuthMethods;
+        public IEnumerable<Control> Properties { get; } = Constants.Properties;
+        public Guide Guide { get; } = Constants.Guide;
+        public IntegrationType Type { get; } = Constants.IntegrationType;
 
         
     }

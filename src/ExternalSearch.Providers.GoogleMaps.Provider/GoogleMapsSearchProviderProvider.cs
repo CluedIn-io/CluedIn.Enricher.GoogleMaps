@@ -11,6 +11,7 @@ using CluedIn.Core.Webhooks;
 using CluedIn.ExternalSearch;
 using CluedIn.ExternalSearch.Providers.GoogleMaps;
 using CluedIn.Providers.Models;
+using Constants = CluedIn.ExternalSearch.Providers.GoogleMaps.Constants;
 
 namespace CluedIn.Provider.GoogleMaps
 {
@@ -20,16 +21,16 @@ namespace CluedIn.Provider.GoogleMaps
 
         public GoogleMapsSearchProviderProvider([System.Diagnostics.CodeAnalysis.NotNull] ApplicationContext appContext) : base(appContext, GetMetaData())
         {
-            ExternalSearchProvider = appContext.Container.ResolveAll<IExternalSearchProvider>().Single(n => n.Id == GoogleMapsConstants.ProviderId);
+            ExternalSearchProvider = appContext.Container.ResolveAll<IExternalSearchProvider>().Single(n => n.Id == Constants.ProviderId);
         }
 
         private static IProviderMetadata GetMetaData()
         {
             return new ProviderMetadata
             {
-                Id = GoogleMapsConstants.ProviderId,
-                Name = GoogleMapsConstants.ProviderName,
-                ComponentName = GoogleMapsConstants.ComponentName,
+                Id = Constants.ProviderId,
+                Name = Constants.ProviderName,
+                ComponentName = Constants.ComponentName,
                 AuthTypes = new List<string>(),
                 SupportsConfiguration = true,
                 SupportsAutomaticWebhookCreation = false,
@@ -43,7 +44,7 @@ namespace CluedIn.Provider.GoogleMaps
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            var result = new GoogleMapsExternalSearchJobData(configuration);
+            var result = new CrawlJobData();
 
             return await Task.FromResult(result);
         }
@@ -110,12 +111,12 @@ namespace CluedIn.Provider.GoogleMaps
             throw new NotImplementedException();
         }
 
-        public string Icon { get; } = GoogleMapsConstants.Icon;
-        public string Domain { get; } = GoogleMapsConstants.Domain;
-        public string About { get; } = GoogleMapsConstants.About;
-        public AuthMethods AuthMethods { get; } = GoogleMapsConstants.AuthMethods;
-        public IEnumerable<Control> Properties { get; } = GoogleMapsConstants.Properties;
-        public Guide Guide { get; } = GoogleMapsConstants.Guide;
-        public new IntegrationType Type { get; } = GoogleMapsConstants.IntegrationType;
+        public string Icon { get; } = Constants.Icon;
+        public string Domain { get; } = Constants.Domain;
+        public string About { get; } = Constants.About;
+        public AuthMethods AuthMethods { get; } = Constants.AuthMethods;
+        public IEnumerable<Control> Properties { get; } = Constants.Properties;
+        public Guide Guide { get; } = Constants.Guide;
+        public new IntegrationType Type { get; } = Constants.IntegrationType;
     }
 }

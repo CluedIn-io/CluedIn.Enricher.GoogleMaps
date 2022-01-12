@@ -5,7 +5,7 @@ using CluedIn.Core.Providers;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
-    public static class GoogleMapsConstants
+    public static class Constants
     {
         public const string ComponentName = "GoogleMaps";
         public const string ProviderName = "Google Maps";
@@ -48,6 +48,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         };
 
         public static Guide Guide { get; set; } = null;
-        public static IntegrationType IntegrationType { get; set; } = IntegrationType.Cloud;
+        public static IntegrationType IntegrationType { get; set; } = IntegrationType.Enrichment;
     }
 }

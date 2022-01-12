@@ -7,13 +7,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
     {
         public GoogleMapsExternalSearchJobData(IDictionary<string, object> configuration)
         {
-            ApiToken = GetValue<string>(configuration, GoogleMapsConstants.KeyName.ApiToken);
+            ApiToken = GetValue<string>(configuration, Constants.KeyName.ApiToken);
         }
 
         public IDictionary<string, object> ToDictionary()
         {
             return new Dictionary<string, object> {
-                { GoogleMapsConstants.KeyName.ApiToken, ApiToken }
+                { Constants.KeyName.ApiToken, ApiToken }
             };
         }
 

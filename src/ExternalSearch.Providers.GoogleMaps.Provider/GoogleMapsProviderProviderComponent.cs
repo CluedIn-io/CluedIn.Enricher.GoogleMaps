@@ -5,10 +5,11 @@ using CluedIn.Core.Providers;
 using CluedIn.Core.Server;
 using CluedIn.ExternalSearch.Providers.GoogleMaps;
 using ComponentHost;
+using Constants = CluedIn.ExternalSearch.Providers.GoogleMaps.Constants;
 
 namespace CluedIn.Provider.GoogleMaps
 {
-    [Component(GoogleMapsConstants.ComponentName, "Providers", ComponentType.Service, ServerComponents.ProviderWebApi, Components.Server, Components.DataStores, Isolation = ComponentIsolation.NotIsolated)]
+    [Component(Constants.ComponentName, "Providers", ComponentType.Service, ServerComponents.ProviderWebApi, Components.Server, Components.DataStores, Isolation = ComponentIsolation.NotIsolated)]
     public sealed class GoogleMapsProviderProviderComponent : ServiceApplicationComponent<IServer>
     {
         /**********************************************************************************************************
@@ -35,7 +36,6 @@ namespace CluedIn.Provider.GoogleMaps
         {
             var asm = Assembly.GetAssembly(typeof(GoogleMapsProviderProviderComponent));
             Container.Register(Types.FromAssembly(asm).BasedOn<IProvider>().WithServiceFromInterface().If(t => !t.IsAbstract).LifestyleSingleton());
-            Container.Register(Types.FromAssembly(asm).BasedOn<IEntityActionBuilder>().WithServiceFromInterface().If(t => !t.IsAbstract).LifestyleSingleton());
 
             State = ServiceState.Started;
         }
