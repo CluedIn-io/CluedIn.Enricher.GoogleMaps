@@ -40,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.GoogleMaps.I
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.Providers.GoogleMaps", "src\ExternalSearch.Providers.GoogleMaps\ExternalSearch.Providers.GoogleMaps.csproj", "{998CD3A8-DF37-4B8F-A519-D805D98E92B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.Providers.GoogleMaps.Provider", "src\ExternalSearch.Providers.GoogleMaps.Provider\ExternalSearch.Providers.GoogleMaps.Provider.csproj", "{76FE5F98-D73D-4175-8936-42BDD012F0BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Provider.ExternalSearch.GoogleMaps", "src\ExternalSearch.Providers.GoogleMaps.Provider\Provider.ExternalSearch.GoogleMaps.csproj", "{76FE5F98-D73D-4175-8936-42BDD012F0BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
