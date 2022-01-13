@@ -25,7 +25,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         {
             token = new List<Control>()
             {
-                new()
+                new Control()
                 {
                     displayName = "Api Key",
                     type = "input",
