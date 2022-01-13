@@ -3,9 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B2A52533-7FBF-41FE-A0AF-874FC54300B2}"
-	ProjectSection(SolutionItems) = preProject
-		src\Directory.Build.props = src\Directory.Build.props
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{DBD1964B-DBD9-4C70-96CA-391C34B3D75F}"
 EndProject
@@ -68,8 +65,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{DBD1964B-DBD9-4C70-96CA-391C34B3D75F} = {7E2E897B-E664-4ECC-8AD8-814AAEAD8639}
-		{5A324190-DAD7-4EEF-92AA-BC3E5712C80B} = {7E2E897B-E664-4ECC-8AD8-814AAEAD8639}
 		{E1A76004-11EB-44E0-B1D2-B197689E9265} = {9BD54E81-D9C8-4419-82B8-8EE6CC7E2647}
 		{02641789-0D38-4DBB-9288-23592CF55D25} = {9BD54E81-D9C8-4419-82B8-8EE6CC7E2647}
 		{2C3AECCF-DCB5-4ED7-8B7B-8F373EDE3A5E} = {9BD54E81-D9C8-4419-82B8-8EE6CC7E2647}
