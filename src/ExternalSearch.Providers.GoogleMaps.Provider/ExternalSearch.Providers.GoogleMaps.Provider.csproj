@@ -14,11 +14,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="Resources\Google_Maps_icon_2020.svg" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="Resources\Google_Maps_icon_2020.svg" />
+      <Compile Remove="Resources\**" />
+      <EmbeddedResource Remove="Resources\**" />
+      <None Remove="Resources\**" />
     </ItemGroup>
 
   <ItemGroup>
