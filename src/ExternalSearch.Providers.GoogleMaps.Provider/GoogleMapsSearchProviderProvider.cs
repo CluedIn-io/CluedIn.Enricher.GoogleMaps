@@ -44,7 +44,7 @@ namespace CluedIn.Provider.GoogleMaps
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            var result = new CrawlJobData();
+            var result = new GoogleMapsExternalSearchJobData(configuration);
 
             return await Task.FromResult(result);
         }
@@ -67,7 +67,7 @@ namespace CluedIn.Provider.GoogleMaps
                 return await Task.FromResult(result.ToDictionary());
             }
 
-            throw new InvalidOperationException($"Unexpected data type for AcceptanceExternalSearchJobData, {jobData.GetType()}");
+            throw new InvalidOperationException($"Unexpected data type for {nameof(GoogleMapsExternalSearchJobData)}, {jobData.GetType()}");
         }
 
         public override Task<IDictionary<string, object>> GetHelperConfiguration(ProviderUpdateContext context, CrawlJobData jobData, Guid organizationId, Guid userId, Guid providerDefinitionId, string folderId)
