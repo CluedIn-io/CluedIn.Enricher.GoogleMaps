@@ -4,6 +4,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CluedIn.CrawlerIntegrationTesting" />
-    <PackageReference Include="CluedIn.CluedIn.Testing.Base" />
+    <PackageReference Include="CluedIn.Testing.Base" />
   </ItemGroup>
 </Project>

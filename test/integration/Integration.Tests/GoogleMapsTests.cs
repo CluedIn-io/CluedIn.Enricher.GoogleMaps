@@ -24,7 +24,7 @@ namespace CluedIn.Tests.Integration.ExternalSearch
             this.outputHelper = outputHelper;
         }
 
-        [Theory]
+        [Theory(Skip = "Requires a working api key")]
         //[InlineData("CluedIn APS", "Titangade 11", "Titangade 11, 2200 København, Denmark")]
         //[InlineData("CluedIn APS", "11 Titangade", "Titangade 11, 2200 København, Denmark")]
         //[InlineData("CluedIn APS", "Denmark, Titangade 11", "Titangade 11, 2200 København, Denmark")]
@@ -70,7 +70,7 @@ namespace CluedIn.Tests.Integration.ExternalSearch
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Requires a working api key")]
         [InlineData("CluedIn APS", "Denmark, Titangade 11", "Titangade 11, 2200 København, Denmark")]
         // Fails since api call does not yield enough information, 
         // and no persons are returned.
