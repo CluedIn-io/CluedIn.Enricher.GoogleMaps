@@ -51,7 +51,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         }
 
         private GoogleMapsExternalSearchProvider(bool tokenProviderIsRequired)
-            : base(Constants.ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization })
+            : base(Constants.ProviderId, AcceptedEntityTypes)
         {
             this.TokenProviderIsRequired = tokenProviderIsRequired;
         }
