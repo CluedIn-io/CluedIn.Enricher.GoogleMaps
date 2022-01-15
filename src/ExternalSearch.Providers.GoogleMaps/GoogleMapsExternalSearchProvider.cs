@@ -21,16 +21,16 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
     /// <summary>The googlemaps graph external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata
+    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
     {
-        public static readonly Guid ProviderId = Guid.Parse("7999344b-2ee6-462a-886a-a630b169117c");   // TODO: Replace value
+        private static readonly EntityType[] AcceptedEntityTypes = { EntityType.Location, EntityType.Organization, EntityType.Location.Address, EntityType.Infrastructure.User, EntityType.Person };
 
         /**********************************************************************************************************
          * CONSTRUCTORS
          **********************************************************************************************************/
 
         public GoogleMapsExternalSearchProvider()
-            : base(ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization, EntityType.Location.Address, EntityType.Infrastructure.User, EntityType.Person })
+            : base(Constants.ProviderId, AcceptedEntityTypes)
         {
             var nameBasedTokenProvider = new NameBasedTokenProvider("GoogleMaps");
 
@@ -51,7 +51,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         }
 
         private GoogleMapsExternalSearchProvider(bool tokenProviderIsRequired)
-            : base(ProviderId, entityTypes: new EntityType[] { EntityType.Location, EntityType.Organization })
+            : base(Constants.ProviderId, AcceptedEntityTypes)
         {
             this.TokenProviderIsRequired = tokenProviderIsRequired;
         }
@@ -222,14 +222,20 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         /// <returns>The results.</returns>
         public override IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query)
         {
+            var apiKey = this.TokenProvider.ApiToken;
 
+            foreach (var externalSearchQueryResult in InternalExecuteSearch(query, apiKey)) yield return externalSearchQueryResult;
+        }
+
+        private static IEnumerable<IExternalSearchQueryResult> InternalExecuteSearch(IExternalSearchQuery query, string apiKey)
+        {
             bool isCompany = false;
 
             var client = new RestClient("https://maps.googleapis.com/maps/api");
             var output = "json";
             var placeDetailsEndpoint = $"place/details/{output}?";
             var placeIdEndpoint = $"place/findplacefromtext/{output}?";
-            var apiKey = this.TokenProvider.ApiToken;
+
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
             placeIdRequest.AddParameter("key", apiKey);
 
@@ -251,12 +257,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 {
                     placeIdRequest.AddParameter("input", query.QueryParameters["locationName"].First());
                 }
+
                 if (query.QueryParameters.ContainsKey("coordinates"))
                 {
                     var transformedCoordinates = string.Join("", query.QueryParameters["coordinates"]);
                     var splitCoordinates = transformedCoordinates.Split(',');
                     placeIdRequest.AddParameter("locationbias", $"point:{splitCoordinates[0]}, {splitCoordinates[1]}");
                 }
+
                 //var locationName = string.Join("", query.QueryParameters["locationName"]);
                 //var transformedCoordinates = string.Join("", query.QueryParameters["coordinates"]);
                 //var splitCoordinates = transformedCoordinates.Split(',');
@@ -282,6 +290,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         request.AddParameter("key", apiKey);
                         request.AddParameter("fields", "name,formatted_address,address_component,adr_address,geometry");
                     }
+
                     var response = client.ExecuteTaskAsync<LocationDetailsResponse>(request).Result;
                     if (response.Data.Status.Equals("REQUEST_DENIED"))
                     {
@@ -292,7 +301,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     {
                         if (response.Data != null)
                             yield return new ExternalSearchQueryResult<LocationDetailsResponse>(query, response.Data);
-
                     }
                     else if (response.StatusCode == HttpStatusCode.NoContent || response.StatusCode == HttpStatusCode.NotFound)
                         yield break;
@@ -309,6 +317,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         request.AddParameter("placeid", placeId.PlaceId);
                         request.AddParameter("key", apiKey);
                     }
+
                     var response = client.ExecuteTaskAsync<CompanyDetailsResponse>(request).Result;
                     if (response.Data.Status.Equals("REQUEST_DENIED"))
                     {
@@ -553,15 +562,49 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             metadata.Properties[GoogleMapsVocabulary.Organization.UtcOffset] = resultItem.Data.Result.UtcOffset.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Vicinity] = resultItem.Data.Result.Vicinity.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Website] = resultItem.Data.Result.Website.PrintIfAvailable();
-
         }
 
-        public string Icon { get; } = "Resources.Google_Maps_icon_2020.svg";
-        public string Domain { get; } = "N/A";
-        public string About { get; } = "Google Maps is a web mapping platform and consumer application offered by Google. It offers satellite imagery, aerial photography, street maps, 360° interactive panoramic views of streets, real-time traffic conditions, and route planning for traveling by foot, car, air and public transportation.";
-        public AuthMethods AuthMethods { get; } = null;
-        public IEnumerable<Control> Properties { get; } = null;
-        public Guide Guide { get; } = null;
-        public IntegrationType Type { get; } = IntegrationType.Cloud;
+        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider)
+        {
+            return AcceptedEntityTypes;
+        }
+
+        public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return BuildQueries(context, request);
+        }
+
+        public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
+        {
+            var jobData = new GoogleMapsExternalSearchJobData(config);
+
+            foreach (var externalSearchQueryResult in InternalExecuteSearch(query, jobData.ApiToken)) yield return externalSearchQueryResult;
+        }
+
+        public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return BuildClues(context, query, result, request);
+        }
+
+        public IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return GetPrimaryEntityMetadata(context, result, request);
+        }
+
+        public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return GetPrimaryEntityPreviewImage(context, result, request);
+        }
+
+        public string Icon { get; } = Constants.Icon;
+        public string Domain { get; } = Constants.Domain;
+        public string About { get; } = Constants.About;
+
+        public AuthMethods AuthMethods { get; } = Constants.AuthMethods;
+        public IEnumerable<Control> Properties { get; } = Constants.Properties;
+        public Guide Guide { get; } = Constants.Guide;
+        public IntegrationType Type { get; } = Constants.IntegrationType;
+
+        
     }
 }
