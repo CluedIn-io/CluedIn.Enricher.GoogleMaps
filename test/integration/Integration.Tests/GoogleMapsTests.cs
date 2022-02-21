@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using CluedIn.Core.Data;
 using CluedIn.Core.Data.Parts;
 using CluedIn.Core.Messages.Processing;
-using CluedIn.ExternalSearch;
 using CluedIn.ExternalSearch.Providers.GoogleMaps;
-using CluedIn.ExternalSearch.Providers.GoogleMaps.Models;
 using CluedIn.Testing.Base.ExternalSearch;
 using Moq;
 using Xunit;
@@ -24,7 +20,7 @@ namespace CluedIn.Tests.Integration.ExternalSearch
             this.outputHelper = outputHelper;
         }
 
-        [Theory]
+        [Theory(Skip = "Requires a working api key")]
         //[InlineData("CluedIn APS", "Titangade 11", "Titangade 11, 2200 København, Denmark")]
         //[InlineData("CluedIn APS", "11 Titangade", "Titangade 11, 2200 København, Denmark")]
         //[InlineData("CluedIn APS", "Denmark, Titangade 11", "Titangade 11, 2200 København, Denmark")]
@@ -70,7 +66,7 @@ namespace CluedIn.Tests.Integration.ExternalSearch
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Requires a working api key")]
         [InlineData("CluedIn APS", "Denmark, Titangade 11", "Titangade 11, 2200 København, Denmark")]
         // Fails since api call does not yield enough information, 
         // and no persons are returned.
