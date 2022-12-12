@@ -393,7 +393,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             else if (result is IExternalSearchQueryResult<CompanyDetailsResponse> companyResult)
             {
 
-                var code = this.GetOrganizationOriginEntityCode(companyResult);
+                var code = this.GetOrganizationOriginEntityCode(companyResult, request);
 
                 var clue = new Clue(code, context.Organization);
 
