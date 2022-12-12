@@ -75,7 +75,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         }
         private IEnumerable<IExternalSearchQuery> InternalBuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config = null)
         {
-            if (config.TryGetValue(Constants.KeyName.AcceptedEntityType, out var customType) && !string.IsNullOrWhiteSpace(customType.ToString()))
+            if (config.TryGetValue(Constants.KeyName.AcceptedEntityType, out var customType) && !string.IsNullOrWhiteSpace(customType?.ToString()))
             {
                 if (!request.EntityMetaData.EntityType.Is(customType.ToString()))
                 {
