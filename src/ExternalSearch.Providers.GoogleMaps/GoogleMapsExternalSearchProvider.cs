@@ -471,13 +471,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         /// <returns>The origin entity code.</returns>
         private EntityCode GetLocationOriginEntityCode(IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
-            return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), resultItem.Id);
+            return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
         }
 
-        private EntityCode GetOrganizationOriginEntityCode(IExternalSearchQueryResult<CompanyDetailsResponse> resultItem)
+        private EntityCode GetOrganizationOriginEntityCode(IExternalSearchQueryResult<CompanyDetailsResponse> resultItem, IExternalSearchRequest request)
         {
 
-            return new EntityCode(EntityType.Organization, this.GetCodeOrigin(), resultItem.Id);
+            return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
         }
 
         /// <summary>Gets the code origin.</summary>
@@ -536,7 +536,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
         private void PopulateCompanyMetadata(IEntityMetadata metadata, IExternalSearchQueryResult<CompanyDetailsResponse> resultItem, IExternalSearchRequest request)
         {
-            var code = this.GetOrganizationOriginEntityCode(resultItem);
+            var code = this.GetOrganizationOriginEntityCode(resultItem, request);
 
             metadata.EntityType = EntityType.Organization;
             metadata.Name = request.EntityMetaData.Name;
