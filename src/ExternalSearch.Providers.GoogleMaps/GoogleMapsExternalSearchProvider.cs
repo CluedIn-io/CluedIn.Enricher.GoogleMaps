@@ -538,7 +538,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         {
             var code = this.GetOrganizationOriginEntityCode(resultItem, request);
 
-            metadata.EntityType = EntityType.Organization;
+            metadata.EntityType = request.EntityMetaData.EntityType;
             metadata.Name = request.EntityMetaData.Name;
             metadata.OriginEntityCode = code;
             metadata.Codes.Add(code);
