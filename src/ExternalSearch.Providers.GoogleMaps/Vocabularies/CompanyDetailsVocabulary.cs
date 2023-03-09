@@ -46,15 +46,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
 
             });
 
-            this.AddMapping(this.FormattedAddress, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address);
-            this.AddMapping(this.StreetNumber, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressStreetNumber);
-            this.AddMapping(this.StreetName, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressStreetName);
-            this.AddMapping(this.CityName, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCity);
-            this.AddMapping(this.CountryCode, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryCode);
-            this.AddMapping(this.PostalCode, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressZipCode);
-            this.AddMapping(this.InternationalPhoneNumber, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.PhoneNumber);
-            this.AddMapping(this.Latitude, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLattitude);
-            this.AddMapping(this.Longitude, CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInLocation.AddressLongitude);
         }
 
         public VocabularyKey AddressComponents { get; set; }
