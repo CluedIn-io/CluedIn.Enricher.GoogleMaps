@@ -605,7 +605,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
         public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
-            return BuildQueries(context, request);
+            return InternalBuildQueries(context, request, config);
         }
 
         public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
