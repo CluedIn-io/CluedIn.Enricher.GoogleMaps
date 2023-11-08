@@ -16,7 +16,6 @@ using System.Web;
 using CluedIn.Core.Data.Relational;
 using CluedIn.Core.Providers;
 using EntityType = CluedIn.Core.Data.EntityType;
-using PdfSharpCore.Pdf.Content.Objects;
 using CluedIn.Core.Data.Vocabularies;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
@@ -38,24 +37,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             if (nameBasedTokenProvider.ApiToken != null)
                 this.TokenProvider = new RoundRobinTokenProvider(nameBasedTokenProvider.ApiToken.Split(',', ';'));
-        }
-
-        public GoogleMapsExternalSearchProvider(IList<string> tokens)
-            : this(true)
-        {
-            this.TokenProvider = new RoundRobinTokenProvider(tokens);
-        }
-
-        public GoogleMapsExternalSearchProvider(IExternalSearchTokenProvider tokenProvider)
-            : this(true)
-        {
-            this.TokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
-        }
-
-        private GoogleMapsExternalSearchProvider(bool tokenProviderIsRequired)
-            : base(Constants.ProviderId, AcceptedEntityTypes)
-        {
-            this.TokenProviderIsRequired = tokenProviderIsRequired;
         }
 
         /**********************************************************************************************************
