@@ -16,7 +16,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
             {
                 this.AddressComponents = group.Add(new VocabularyKey("AddressComponents", VocabularyKeyDataType.Json, VocabularyKeyVisibility.Hidden));
                 this.PostalCode = group.Add(new VocabularyKey("PostalCode", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
-                this.StreetNumber = group.Add(new VocabularyKey("StreeNumber", VocabularyKeyDataType.GeographyLocation, VocabularyKeyVisibility.Visible));
+                this.StreetNumber = group.Add(new VocabularyKey("StreetNumber", VocabularyKeyDataType.GeographyLocation, VocabularyKeyVisibility.Visible));
                 this.StreetName = group.Add(new VocabularyKey("StreetName", VocabularyKeyDataType.GeographyLocation, VocabularyKeyVisibility.Visible));
                 this.CityName = group.Add(new VocabularyKey("CityName", VocabularyKeyDataType.GeographyLocation, VocabularyKeyVisibility.Visible));
                 this.CountryCode = group.Add(new VocabularyKey("CountryCode", VocabularyKeyDataType.GeographyLocation, VocabularyKeyVisibility.Visible));
@@ -43,6 +43,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
                 this.Website = group.Add(new VocabularyKey("Website", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
                 this.Latitude = group.Add(new VocabularyKey("Latitude", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Visible));
                 this.Longitude = group.Add(new VocabularyKey("Longitude", VocabularyKeyDataType.GeographyCoordinates, VocabularyKeyVisibility.Visible));
+
+                this.BusinessStatus = group.Add(new VocabularyKey("BusinessStatus", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.SubPremise = group.Add(new VocabularyKey("SubPremise", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Hidden));
+                this.AdministrativeAreaLevel1 = group.Add(new VocabularyKey("AdministrativeAreaLevel1", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.AdministrativeAreaLevel2 = group.Add(new VocabularyKey("AdministrativeAreaLevel2", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.Neighborhood = group.Add(new VocabularyKey("Neighborhood", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
 
             });
 
@@ -77,6 +83,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
         public VocabularyKey Website { get; set; }
         public VocabularyKey Latitude { get; set; }
         public VocabularyKey Longitude { get; set; }
+        public VocabularyKey SubPremise { get; internal set; }
+        public VocabularyKey AdministrativeAreaLevel1 { get; internal set; }
+        public VocabularyKey AdministrativeAreaLevel2 { get; internal set; }
+        public VocabularyKey Neighborhood { get; internal set; }
+        public VocabularyKey BusinessStatus { get; internal set; }
     }
 
 }

@@ -17,6 +17,7 @@ using CluedIn.Core.Data.Relational;
 using CluedIn.Core.Providers;
 using EntityType = CluedIn.Core.Data.EntityType;
 using CluedIn.Core.Data.Vocabularies;
+using Microsoft.Extensions.Logging;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
@@ -89,6 +90,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var organizationAddress = GetValue(request, config, Constants.KeyName.OrgAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address);
             var organizationZip = GetValue(request, config, Constants.KeyName.OrgZipCodeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressZipCode);
             var organizationState = GetValue(request, config, Constants.KeyName.OrgStateKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var organizationCity = GetValue(request, config, Constants.KeyName.OrgCityKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCity);
             var organizationCountry = GetValue(request, config, Constants.KeyName.OrgCountryKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
             var locationAddress = GetValue(request, config, Constants.KeyName.LocationAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
             var userAddress = GetValue(request, config, Constants.KeyName.UserAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
@@ -102,24 +104,28 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 && organizationAddress != null && organizationAddress.Count > 0
                 && organizationZip != null && organizationZip.Count > 0
                 && organizationState != null && organizationState.Count > 0
+                   && organizationCity != null && organizationCity.Count > 0
                 && organizationCountry != null && organizationCountry.Count > 0)
             {
                 foreach (var nameValue in organizationName.Where(v => !NameFilter(v)))
                 {
                     foreach (var addressValue in organizationAddress.Where(v => !AddressFilter(v)))
                     {
-                        foreach (var zipValue in organizationZip.Where(v => !AddressFilter(v)))
+                        foreach (var cityValue in organizationCity.Where(v => !AddressFilter(v)))
                         {
-                            foreach (var stateValue in organizationState.Where(v => !AddressFilter(v)))
+                            foreach (var zipValue in organizationZip.Where(v => !AddressFilter(v)))
                             {
-                                foreach (var countryValue in organizationCountry.Where(v => !AddressFilter(v)))
+                                foreach (var stateValue in organizationState.Where(v => !AddressFilter(v)))
                                 {
-                                    var companyDict = new Dictionary<string, string>
+                                    foreach (var countryValue in organizationCountry.Where(v => !AddressFilter(v)))
+                                    {
+                                        var companyDict = new Dictionary<string, string>
                                     {
                                         {"companyName", nameValue },
-                                        {"companyAddress", $"{addressValue}, {zipValue}, {stateValue}, {countryValue}" }
+                                        {"companyAddress", $"{addressValue}, {cityValue}, {zipValue}, {stateValue}, {countryValue}" }
                                     };
-                                    yield return new ExternalSearchQuery(this, entityType, companyDict);
+                                        yield return new ExternalSearchQuery(this, entityType, companyDict);
+                                    }
                                 }
                             }
                         }
@@ -233,20 +239,20 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         {
             var apiKey = this.TokenProvider.ApiToken;
 
-            foreach (var externalSearchQueryResult in InternalExecuteSearch(query, apiKey)) yield return externalSearchQueryResult;
+            foreach (var externalSearchQueryResult in InternalExecuteSearch(context, query, apiKey)) yield return externalSearchQueryResult;
         }
 
-        private static IEnumerable<IExternalSearchQueryResult> InternalExecuteSearch(IExternalSearchQuery query, string apiKey)
+        private static IEnumerable<IExternalSearchQueryResult> InternalExecuteSearch(ExecutionContext context, IExternalSearchQuery query, string apiKey)
         {
             bool isCompany = false;
 
             var client = new RestClient("https://maps.googleapis.com/maps/api");
             var output = "json";
             var placeDetailsEndpoint = $"place/details/{output}?";
-            var placeIdEndpoint = $"place/findplacefromtext/{output}?";
+            var placeIdEndpoint = $"place/textsearch/{output}?";
 
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
-            placeIdRequest.AddParameter("key", apiKey);
+            placeIdRequest.AddQueryParameter("key", apiKey);
 
             if (query.QueryParameters.ContainsKey("companyName") && query.QueryParameters.ContainsKey("companyAddress"))
             {
@@ -255,9 +261,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     name = query.QueryParameters["companyName"].FirstOrDefault(),
                     address = query.QueryParameters["companyAddress"].FirstOrDefault()
                 };
-                var encodedInput = HttpUtility.UrlEncode(input.name + " " + input.address);
-                placeIdRequest.AddParameter("input", encodedInput);
-                placeIdRequest.AddParameter("inputtype", "textquery");
+                var encodedInput = input.name + " " + input.address;
+                placeIdRequest.AddQueryParameter("query", encodedInput);
+                //placeIdRequest.AddParameter("inputtype", "textquery");
                 isCompany = true;
             }
             else
@@ -274,17 +280,29 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     placeIdRequest.AddParameter("locationbias", $"point:{splitCoordinates[0]}, {splitCoordinates[1]}");
                 }
 
-                //var locationName = string.Join("", query.QueryParameters["locationName"]);
-                //var transformedCoordinates = string.Join("", query.QueryParameters["coordinates"]);
-                //var splitCoordinates = transformedCoordinates.Split(',');
-                //placeIdRequest.AddParameter("input", locationName);
-                //placeIdRequest.AddParameter("locationbias", $"point:{splitCoordinates[0]}, {splitCoordinates[1]}");
                 placeIdRequest.AddParameter("inputtype", "textquery");
             }
 
-            var placeIdResponse = client.ExecuteTaskAsync<PlaceIdResponse>(placeIdRequest).Result;
-            if (placeIdResponse.Data.Status.Equals("REQUEST_DENIED"))
+            IRestResponse<PlaceIdResponse> placeIdResponse = null;
+
+            try
             {
+                context.Log.LogInformation("Making Google Maps call. Request: ", JsonUtility.Serialize(placeIdRequest.Parameters));
+                placeIdResponse = client.ExecuteTaskAsync<PlaceIdResponse>(placeIdRequest).Result;
+            }
+            catch(Exception exception)
+            {
+                context.Log.LogError("Could not return PlaceIdResponse from Google Maps", exception);
+            }
+
+            if (placeIdResponse == null)
+            {
+                yield break;
+            }
+
+            if (placeIdResponse.Data.status.Equals("REQUEST_DENIED"))
+            {
+                context.Log.LogError("REQUEST DENIED by Google Maps");
                 yield break;
             }
 
@@ -293,11 +311,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 if (placeIdResponse.Data != null && isCompany == false)
                 {
                     var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-                    foreach (var placeId in placeIdResponse.Data.Candidates)
+                    foreach (var placeId in placeIdResponse.Data.results)
                     {
-                        request.AddParameter("placeid", placeId.PlaceId);
+                        request.AddParameter("placeid", placeId.place_id);
                         request.AddParameter("key", apiKey);
-                        request.AddParameter("fields", "name,formatted_address,address_component,adr_address,geometry");
+                        //request.AddParameter("fields", "name,formatted_address,address_component,adr_address,geometry");//Removed becasue I want all propertues. 
                     }
 
                     var response = client.ExecuteTaskAsync<LocationDetailsResponse>(request).Result;
@@ -321,15 +339,33 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 else
                 {
                     var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-                    foreach (var placeId in placeIdResponse.Data.Candidates)
+                    foreach (var placeId in placeIdResponse.Data.results)
                     {
-                        request.AddParameter("placeid", placeId.PlaceId);
+                        request.AddParameter("placeid", placeId.place_id);
                         request.AddParameter("key", apiKey);
                     }
 
-                    var response = client.ExecuteTaskAsync<CompanyDetailsResponse>(request).Result;
+                    IRestResponse<CompanyDetailsResponse> response = null;
+
+                    try
+                    {
+                        context.Log.LogInformation("Making Google Maps call. Request: ", JsonUtility.Serialize(request.Parameters));
+                        response = client.ExecuteTaskAsync<CompanyDetailsResponse>(request).Result;
+                    }
+                    catch(Exception exception)
+                    {
+                        context.Log.LogError("Could not return CompanyDetailsResponse from Google Maps", exception);
+                    }
+
+                    if (response == null)
+                    {
+                        yield break;
+
+                    }
+
                     if (response.Data.Status.Equals("REQUEST_DENIED"))
                     {
+                        context.Log.LogError("REQUEST DENIED by Google Maps");
                         yield break;
                     }
 
@@ -545,32 +581,47 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     case "postal_code":
                         metadata.Properties[GoogleMapsVocabulary.Organization.PostalCode] = component.ShortName;
                         break;
+                    case "subpremise":
+                        metadata.Properties[GoogleMapsVocabulary.Organization.SubPremise] = component.ShortName;
+                        break;
+                    case "administrative_area_level_1":
+                        metadata.Properties[GoogleMapsVocabulary.Organization.AdministrativeAreaLevel1] = component.ShortName;
+                        break;
+                    case "administrative_area_level_2":
+                        metadata.Properties[GoogleMapsVocabulary.Organization.AdministrativeAreaLevel2] = component.ShortName;
+                        break;
+                    case "neighborhood":
+                        metadata.Properties[GoogleMapsVocabulary.Organization.Neighborhood] = component.ShortName;
+                        break;
                 }
 
             }
 
-            //metadata.Properties[GoogleMapsVocabulary.Organization.AdrAddress] = resultItem.Data.Result.AdrAddress.PrintIfAvailable();
+            metadata.Properties[GoogleMapsVocabulary.Organization.AdrAddress] = resultItem.Data.Result.AdrAddress.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.FormattedAddress] = resultItem.Data.Result.FormattedAddress.PrintIfAvailable();
+            metadata.Properties[GoogleMapsVocabulary.Organization.FormattedPhoneNumber] = resultItem.Data.Result.FormattedPhoneNumber.PrintIfAvailable();
             //metadata.Properties[GoogleMapsVocabulary.Organization.Geometry] = resultItem.Data.Result.Geometry.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Longitude] = resultItem.Data.Result.Geometry.Location.Lng.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Latitude] = resultItem.Data.Result.Geometry.Location.Lat.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Icon] = resultItem.Data.Result.Icon.PrintIfAvailable();
-            metadata.Properties[GoogleMapsVocabulary.Organization.Id] = resultItem.Data.Result.Id.PrintIfAvailable();
+            metadata.Properties[GoogleMapsVocabulary.Organization.Id] = resultItem.Data.Result.PlaceId.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.InternationalPhoneNumber] = resultItem.Data.Result.InternationalPhoneNumber.PrintIfAvailable();
-            //metadata.Properties[GoogleMapsVocabulary.Organization.Name] = resultItem.Data.Result.PrintIfAvailable();
+            metadata.Properties[GoogleMapsVocabulary.Organization.Name] = resultItem.Data.Result.Name.PrintIfAvailable();
             //metadata.Properties[GoogleMapsVocabulary.Organization.OpeningHours] = resultItem.Data.Result.OpeningHours.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.PlaceId] = resultItem.Data.Result.PlaceId.PrintIfAvailable();
             //metadata.Properties[GoogleMapsVocabulary.Organization.PlusCode] = JsonUtility.Serialize(resultItem.Data.Result.PlusCode);
             metadata.Properties[GoogleMapsVocabulary.Organization.Rating] = resultItem.Data.Result.Rating.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Reference] = resultItem.Data.Result.Reference.PrintIfAvailable();
             //metadata.Properties[GoogleMapsVocabulary.Organization.Reviews] = JsonUtility.Serialize(resultItem.Data.Result.Reviews);
-            metadata.Properties[GoogleMapsVocabulary.Organization.Scope] = resultItem.Data.Result.Scope.PrintIfAvailable();
+            //metadata.Properties[GoogleMapsVocabulary.Organization.Scope] = resultItem.Data.Result..PrintIfAvailable();
             //metadata.Properties[GoogleMapsVocabulary.Organization.Types] = resultItem.Data.Result.Types.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Url] = resultItem.Data.Result.Url.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.UserRatingsTotal] = resultItem.Data.Result.UserRatingsTotal.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.UtcOffset] = resultItem.Data.Result.UtcOffset.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Vicinity] = resultItem.Data.Result.Vicinity.PrintIfAvailable();
             metadata.Properties[GoogleMapsVocabulary.Organization.Website] = resultItem.Data.Result.Website.PrintIfAvailable();
+
+            metadata.Properties[GoogleMapsVocabulary.Organization.BusinessStatus] = resultItem.Data.Result.BusinessStatus.PrintIfAvailable();
         }
 
         public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider)
@@ -593,7 +644,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         {
             var jobData = new GoogleMapsExternalSearchJobData(config);
 
-            foreach (var externalSearchQueryResult in InternalExecuteSearch(query, jobData.ApiToken)) yield return externalSearchQueryResult;
+            foreach (var externalSearchQueryResult in InternalExecuteSearch(context, query, jobData.ApiToken)) yield return externalSearchQueryResult;
         }
 
         public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)

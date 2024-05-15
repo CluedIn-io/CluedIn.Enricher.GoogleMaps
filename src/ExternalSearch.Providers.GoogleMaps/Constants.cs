@@ -18,6 +18,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             public const string OrgNameKey = "orgNameKey";
             public const string OrgAddressKey = "orgAddressKey";
             public const string OrgZipCodeKey = "orgZipCodeKey";
+            public const string OrgCityKey = "orgCityKey";
             public const string OrgStateKey = "orgStateKey";
             public const string OrgCountryKey = "orgCountryKey";
             public const string LocationAddressKey = "locationAddressKey";
@@ -64,7 +65,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     isRequired = false,
                     name = KeyName.OrgAddressKey
                 },
-
+                 new Control()
+                {
+                    displayName = "Organization City vocab key",
+                    type = "input",
+                    isRequired = false,
+                    name = KeyName.OrgCityKey
+                },
                 new Control()
                 {
                     displayName = "Organization Zip vocab key",
