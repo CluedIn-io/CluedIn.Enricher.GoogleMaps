@@ -118,12 +118,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                                 foreach (var stateValue in organizationState.Where(v => !AddressFilter(v)))
                                 {
                                     foreach (var countryValue in organizationCountry.Where(v => !AddressFilter(v)))
-                                    {
+                                    { 
                                         var companyDict = new Dictionary<string, string>
-                                    {
-                                        {"companyName", nameValue },
-                                        {"companyAddress", $"{addressValue}, {cityValue}, {zipValue}, {stateValue}, {countryValue}" }
-                                    };
+                                        {
+                                            {"companyName", nameValue },
+                                            {"companyAddress", $"{addressValue}, {cityValue}, {zipValue}, {stateValue}, {countryValue}" }
+                                        };
+                                        
                                         yield return new ExternalSearchQuery(this, entityType, companyDict);
                                     }
                                 }
@@ -263,7 +264,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 };
                 var encodedInput = input.name + " " + input.address;
                 placeIdRequest.AddQueryParameter("query", encodedInput);
-                //placeIdRequest.AddParameter("inputtype", "textquery");
+
                 isCompany = true;
             }
             else
@@ -300,7 +301,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 yield break;
             }
 
-            if (placeIdResponse.Data.status.Equals("REQUEST_DENIED"))
+            if (placeIdResponse.Data.Status.Equals("REQUEST_DENIED"))
             {
                 context.Log.LogError("REQUEST DENIED by Google Maps");
                 yield break;
@@ -311,11 +312,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 if (placeIdResponse.Data != null && isCompany == false)
                 {
                     var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-                    foreach (var placeId in placeIdResponse.Data.results)
+                    foreach (var placeId in placeIdResponse.Data.Results)
                     {
-                        request.AddParameter("placeid", placeId.place_id);
+                        request.AddParameter("placeid", placeId.PlaceId);
                         request.AddParameter("key", apiKey);
-                        //request.AddParameter("fields", "name,formatted_address,address_component,adr_address,geometry");//Removed becasue I want all propertues. 
                     }
 
                     var response = client.ExecuteTaskAsync<LocationDetailsResponse>(request).Result;
@@ -339,9 +339,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 else
                 {
                     var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-                    foreach (var placeId in placeIdResponse.Data.results)
+                    foreach (var placeId in placeIdResponse.Data.Results)
                     {
-                        request.AddParameter("placeid", placeId.place_id);
+                        request.AddParameter("placeid", placeId.PlaceId);
                         request.AddParameter("key", apiKey);
                     }
 
@@ -360,7 +360,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     if (response == null)
                     {
                         yield break;
-
                     }
 
                     if (response.Data.Status.Equals("REQUEST_DENIED"))

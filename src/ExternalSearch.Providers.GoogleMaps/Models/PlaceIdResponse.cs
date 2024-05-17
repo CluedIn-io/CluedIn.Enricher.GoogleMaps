@@ -3,75 +3,129 @@ using Newtonsoft.Json;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Models
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class Geometry
     {
-        public Location location { get; set; }
-        public Viewport viewport { get; set; }
+        [JsonProperty("location")]
+        public Location Location { get; set; }
+        
+        [JsonProperty("viewport")]
+        public Viewport Viewport { get; set; }
     }
 
     public class Location
     {
-        public double lat { get; set; }
-        public double lng { get; set; }
+        [JsonProperty("lat")]
+        public double Lat { get; set; }
+        
+        [JsonProperty("lng")]
+        public double Lng { get; set; }
     }
 
     public class Northeast
     {
-        public double lat { get; set; }
-        public double lng { get; set; }
+        [JsonProperty("lat")]
+        public double Lat { get; set; }
+        
+        [JsonProperty("lng")]
+        public double Lng { get; set; }
     }
 
     public class Photo
     {
-        public int height { get; set; }
-        public List<string> html_attributions { get; set; }
-        public string photo_reference { get; set; }
-        public int width { get; set; }
+        [JsonProperty("height")]
+        public int Height { get; set; }
+        
+        [JsonProperty("html_attributions")]
+        public List<string> HtmlAttributions { get; set; }
+        
+        [JsonProperty("photo_reference")]
+        public string PhotoReference { get; set; }
+        
+        [JsonProperty("width")]
+        public int Width { get; set; }
     }
 
     public class PlusCode
     {
-        public string compound_code { get; set; }
-        public string global_code { get; set; }
+        [JsonProperty("compound_code")]
+        public string CompoundCode { get; set; }
+        
+        [JsonProperty("global_code")]
+        public string GlobalCode { get; set; }
     }
 
     public class Result
     {
-        public string business_status { get; set; }
-        public string formatted_address { get; set; }
-        public Geometry geometry { get; set; }
-        public string icon { get; set; }
-        public string icon_background_color { get; set; }
-        public string icon_mask_base_uri { get; set; }
-        public string name { get; set; }
-        public List<Photo> photos { get; set; }
-        public string place_id { get; set; }
-        public PlusCode plus_code { get; set; }
-        public double rating { get; set; }
-        public string reference { get; set; }
-        public List<string> types { get; set; }
-        public int user_ratings_total { get; set; }
+        [JsonProperty("business_status")]
+        public string BusinessStatus { get; set; }
+        
+        [JsonProperty("formatted_address")]
+        public string FormattedAddress { get; set; }
+        
+        [JsonProperty("geometry")]
+        public Geometry Geometry { get; set; }
+        
+        [JsonProperty("icon")]
+        public string Icon { get; set; }
+        
+        [JsonProperty("icon_background_color")]
+        public string IconBackgroundColor { get; set; }
+        
+        [JsonProperty("icon_mask_base_uri")]
+        public string IconMaskBaseUri { get; set; }
+        
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        
+        [JsonProperty("photos")]
+        public List<Photo> Photos { get; set; }
+        
+        [JsonProperty("place_id")]
+        public string PlaceId { get; set; }
+        
+        [JsonProperty("plus_code")]
+        public PlusCode PlusCode { get; set; }
+        
+        [JsonProperty("rating")]
+        public double Rating { get; set; }
+        
+        [JsonProperty("reference")]
+        public string Reference { get; set; }
+        
+        [JsonProperty("types")]
+        public List<string> Types { get; set; }
+        
+        [JsonProperty("user_ratings_total")]
+        public int UserRatingsTotal { get; set; }
     }
 
     public class PlaceIdResponse
     {
-        public List<object> html_attributions { get; set; }
-        public List<Result> results { get; set; }
-        public string status { get; set; }
+        [JsonProperty("html_attributions")]
+        public List<object> HtmlAttributions { get; set; }
+        
+        [JsonProperty("results")]
+        public List<Result> Results { get; set; }
+        
+        [JsonProperty("status")]
+        public string Status { get; set; }
     }
 
     public class Southwest
     {
-        public double lat { get; set; }
-        public double lng { get; set; }
+        [JsonProperty("lat")]
+        public double Lat { get; set; }
+        
+        [JsonProperty("lng")]
+        public double Lng { get; set; }
     }
 
     public class Viewport
     {
-        public Northeast northeast { get; set; }
-        public Southwest southwest { get; set; }
+        [JsonProperty("northeast")]
+        public Northeast Northeast { get; set; }
+        
+        [JsonProperty("southwest")]
+        public Southwest Southwest { get; set; }
     }
-
-
 }
