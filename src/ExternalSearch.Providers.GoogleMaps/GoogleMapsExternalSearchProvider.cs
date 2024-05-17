@@ -287,7 +287,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             try
             {
-                context.Log.LogInformation("Making Google Maps call. Request: ", JsonUtility.Serialize(placeIdRequest.Parameters));
+                context.Log.LogTrace("Making Google Maps call. Request: ", JsonUtility.Serialize(placeIdRequest.Parameters));
                 placeIdResponse = client.ExecuteTaskAsync<PlaceIdResponse>(placeIdRequest).Result;
             }
             catch(Exception exception)
@@ -349,7 +349,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
                     try
                     {
-                        context.Log.LogInformation("Making Google Maps call. Request: ", JsonUtility.Serialize(request.Parameters));
+                        context.Log.LogTrace("Making Google Maps call. Request: ", JsonUtility.Serialize(request.Parameters));
                         response = client.ExecuteTaskAsync<CompanyDetailsResponse>(request).Result;
                     }
                     catch(Exception exception)
