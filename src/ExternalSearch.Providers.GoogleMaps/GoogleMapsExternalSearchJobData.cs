@@ -12,6 +12,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             OrgNameKey = GetValue<string>(configuration, Constants.KeyName.OrgNameKey);
             OrgAddressKey = GetValue<string>(configuration, Constants.KeyName.OrgAddressKey);
             OrgZipCodeKey = GetValue<string>(configuration, Constants.KeyName.OrgZipCodeKey);
+            OrgCityKey = GetValue<string>(configuration, Constants.KeyName.OrgCityKey);
             OrgStateKey = GetValue<string>(configuration, Constants.KeyName.OrgStateKey);
             OrgCountryKey = GetValue<string>(configuration, Constants.KeyName.OrgCountryKey);
             LocationAddressKey = GetValue<string>(configuration, Constants.KeyName.LocationAddressKey);
@@ -30,6 +31,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 { Constants.KeyName.OrgNameKey, OrgNameKey },
                 { Constants.KeyName.OrgAddressKey, OrgAddressKey },
                 { Constants.KeyName.OrgZipCodeKey, OrgZipCodeKey },
+                { Constants.KeyName.OrgCityKey, OrgCityKey },
                 { Constants.KeyName.OrgStateKey, OrgStateKey },
                 { Constants.KeyName.OrgCountryKey, OrgCountryKey },
                 { Constants.KeyName.LocationAddressKey, LocationAddressKey },
@@ -46,6 +48,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         public string OrgNameKey { get; set; }
         public string OrgAddressKey { get; set; }
         public string OrgZipCodeKey { get; set; }
+        public string OrgCityKey { get; set; }
         public string OrgStateKey { get; set; }
         public string OrgCountryKey { get; set; }
         public string LocationAddressKey { get; set; }
