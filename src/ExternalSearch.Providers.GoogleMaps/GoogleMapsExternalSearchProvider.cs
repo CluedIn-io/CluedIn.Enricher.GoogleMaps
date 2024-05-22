@@ -67,6 +67,15 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             else if (!this.Accepts(request.EntityMetaData.EntityType))
                 yield break;
 
+            if (config.TryGetValue(Constants.KeyName.ControlFlag, out var controlFlag) && !string.IsNullOrWhiteSpace(controlFlag?.ToString()))
+            {
+                if (request.EntityMetaData.Properties.GetValue(controlFlag.ToString()) != "true")
+                {
+                    context.Log.LogTrace($"Skipped enrichment for record {request.EntityMetaData.OriginEntityCode} because VocabularyKey {controlFlag} value was not true. Actual value: {request.EntityMetaData.Properties.GetValue(controlFlag.ToString())}");
+                    yield break;
+                }
+            }
+
             //var entityType = request.EntityMetaData.EntityType;
 
             //if (string.IsNullOrEmpty(this.TokenProvider.ApiToken))

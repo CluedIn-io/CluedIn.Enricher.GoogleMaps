@@ -15,6 +15,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         {
             public const string ApiToken = "apiToken";
             public const string AcceptedEntityType = "acceptedEntityType";
+            public const string ControlFlag = "controlFlag";
             public const string OrgNameKey = "orgNameKey";
             public const string OrgAddressKey = "orgAddressKey";
             public const string OrgZipCodeKey = "orgZipCodeKey";
@@ -50,6 +51,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     type = "input",
                     isRequired = false,
                     name = KeyName.AcceptedEntityType
+                },
+                new Control()
+                {
+                    displayName = "Vocabulary Key used to control whether it should be enriched",
+                    type = "input",
+                    isRequired = false,
+                    name = KeyName.ControlFlag
                 },
                 new Control()
                 {
