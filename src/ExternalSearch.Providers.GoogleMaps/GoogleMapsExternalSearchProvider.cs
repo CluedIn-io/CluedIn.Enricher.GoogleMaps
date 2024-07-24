@@ -72,18 +72,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             return configurableAcceptedEntityTypes.Any(entityTypeToEvaluate.Is);
         }
 
-        /// <summary>Builds the queries.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The search queries.</returns>
-        public override IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request)
-        {
-            foreach (var externalSearchQuery in InternalBuildQueries(context, request))
-            {
-                yield return externalSearchQuery;
-            }
-        }
-        private IEnumerable<IExternalSearchQuery> InternalBuildQueries(ExecutionContext context, IExternalSearchRequest request, GoogleMapsExternalSearchJobData config = null)
+        public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+            => InternalBuildQueries(context, request, new GoogleMapsExternalSearchJobData(config));
+
+        private IEnumerable<IExternalSearchQuery> InternalBuildQueries(ExecutionContext context, IExternalSearchRequest request, GoogleMapsExternalSearchJobData config)
         {
             if (!this.Accepts(config, request.EntityMetaData.EntityType))
                 yield break;
@@ -263,20 +255,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             return value;
         }
 
-        /// <summary>Executes the search.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns>The results.</returns>
-        public override IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query)
+        public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
         {
-            var apiKey = this.TokenProvider.ApiToken;
+            var jobData = new GoogleMapsExternalSearchJobData(config);
 
-            foreach (var externalSearchQueryResult in InternalExecuteSearch(context, query, apiKey)) yield return externalSearchQueryResult;
-        }
-
-        private static IEnumerable<IExternalSearchQueryResult> InternalExecuteSearch(ExecutionContext context, IExternalSearchQuery query, string apiKey)
-        {
             bool isCompany = false;
+            var  apiToken  = jobData.ApiToken;
 
             var client = new RestClient("https://maps.googleapis.com/maps/api");
             var output = "json";
@@ -284,7 +268,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var placeIdEndpoint = $"place/textsearch/{output}?";
 
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
-            placeIdRequest.AddQueryParameter("key", apiKey);
+            placeIdRequest.AddQueryParameter("key", apiToken);
 
             if (query.QueryParameters.ContainsKey("companyName") && query.QueryParameters.ContainsKey("companyAddress"))
             {
@@ -346,7 +330,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     foreach (var placeId in placeIdResponse.Data.Results)
                     {
                         request.AddParameter("placeid", placeId.PlaceId);
-                        request.AddParameter("key", apiKey);
+                        request.AddParameter("key", apiToken);
                     }
 
                     var response = client.ExecuteTaskAsync<LocationDetailsResponse>(request).Result;
@@ -373,7 +357,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     foreach (var placeId in placeIdResponse.Data.Results)
                     {
                         request.AddParameter("placeid", placeId.PlaceId);
-                        request.AddParameter("key", apiKey);
+                        request.AddParameter("key", apiToken);
                     }
 
                     IRestResponse<CompanyDetailsResponse> response = null;
@@ -414,15 +398,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
         }
 
-        /// <summary>Builds the clues.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="query">The query.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The clues.</returns>
-        public override IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request)
+        public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
-
             if (result is IExternalSearchQueryResult<LocationDetailsResponse> locationDetailsResult)
             {
 
@@ -452,18 +429,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
 
             return null;
-
-
         }
 
-        /// <summary>Gets the primary entity metadata.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The primary entity metadata.</returns>
-        public override IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request)
+        public IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
-
             if (result is IExternalSearchQueryResult<LocationDetailsResponse> locationResult)
             {
                 if (locationResult.Data.Result != null)
@@ -478,22 +447,20 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     return this.CreateCompanyMetadata(companyResult, request);
                 }
             }
+
             return null;
         }
 
-        /// <summary>Gets the preview image.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The preview image.</returns>
         public override IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request)
         {
             return null;
         }
 
-        /// <summary>Creates the metadata.</summary>
-        /// <param name="resultItem">The result item.</param>
-        /// <returns>The metadata.</returns>
+        public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return null;
+        }
+
         private IEntityMetadata CreateLocationMetadata(IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
             var metadata = new EntityMetadataPart();
@@ -512,10 +479,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             return metadata;
         }
 
-
-        /// <summary>Gets the origin entity code.</summary>
-        /// <param name="resultItem">The result item.</param>
-        /// <returns>The origin entity code.</returns>
         private EntityCode GetLocationOriginEntityCode(IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
             return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
@@ -527,16 +490,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
         }
 
-        /// <summary>Gets the code origin.</summary>
-        /// <returns>The code origin</returns>
         private CodeOrigin GetCodeOrigin()
         {
             return CodeOrigin.CluedIn.CreateSpecific("googlemaps");
         }
 
-        /// <summary>Populates the metadata.</summary>
-        /// <param name="metadata">The metadata.</param>
-        /// <param name="resultItem">The result item.</param>
         private void PopulateLocationMetadata(IEntityMetadata metadata, IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
         {
             var code = this.GetLocationOriginEntityCode(resultItem, request);
@@ -654,35 +612,16 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             metadata.Properties[GoogleMapsVocabulary.Organization.BusinessStatus] = resultItem.Data.Result.BusinessStatus.PrintIfAvailable();
         }
 
-        public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return InternalBuildQueries(context, request, new GoogleMapsExternalSearchJobData(config));
-        }
-
-        public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
-        {
-            var jobData = new GoogleMapsExternalSearchJobData(config);
-
-            foreach (var externalSearchQueryResult in InternalExecuteSearch(context, query, jobData.ApiToken)) yield return externalSearchQueryResult;
-        }
-
-        public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return BuildClues(context, query, result, request);
-        }
-
-        public IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return GetPrimaryEntityMetadata(context, result, request);
-        }
-
-        public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return GetPrimaryEntityPreviewImage(context, result, request);
-        }
-
         // Since this is a configurable external search provider, theses methods should never be called
         public override bool Accepts(EntityType entityType) => throw new NotSupportedException();
+        public override IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request) => throw new NotSupportedException();
+        public override IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query) => throw new NotSupportedException();
+        public override IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request) => throw new NotSupportedException();
+        public override IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request) => throw new NotSupportedException();
+
+        /**********************************************************************************************************
+         * PROPERTIES
+         **********************************************************************************************************/
 
         public string Icon { get; } = Constants.Icon;
         public string Domain { get; } = Constants.Domain;
@@ -692,7 +631,5 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         public IEnumerable<Control> Properties { get; } = Constants.Properties;
         public Guide Guide { get; } = Constants.Guide;
         public IntegrationType Type { get; } = Constants.IntegrationType;
-
-        
     }
 }
