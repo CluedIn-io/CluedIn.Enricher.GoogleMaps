@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Web;
+
 using CluedIn.Core.Data.Relational;
 using CluedIn.Core.Providers;
 using EntityType = CluedIn.Core.Data.EntityType;
@@ -25,14 +25,18 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
     public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
     {
-        private static EntityType[] AcceptedEntityTypes = { EntityType.Organization };
+        /**********************************************************************************************************
+         * FIELDS
+         **********************************************************************************************************/
+
+        private static readonly EntityType[] DefaultAcceptedEntityTypes = { EntityType.Organization };
 
         /**********************************************************************************************************
          * CONSTRUCTORS
          **********************************************************************************************************/
 
         public GoogleMapsExternalSearchProvider()
-            : base(Constants.ProviderId, AcceptedEntityTypes)
+            : base(Constants.ProviderId, DefaultAcceptedEntityTypes)
         {
             var nameBasedTokenProvider = new NameBasedTokenProvider("GoogleMaps");
 
@@ -43,6 +47,30 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         /**********************************************************************************************************
          * METHODS
          **********************************************************************************************************/
+
+        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider) => this.Accepts(config);
+
+        private IEnumerable<EntityType> Accepts(IDictionary<string, object> config)
+            => Accepts(new GoogleMapsExternalSearchJobData(config));
+
+        private IEnumerable<EntityType> Accepts(GoogleMapsExternalSearchJobData config)
+        {
+            if (!string.IsNullOrWhiteSpace(config.AcceptedEntityType))
+            {
+                // If configured, only accept the configured entity types
+                return new EntityType[] { config.AcceptedEntityType };
+            }
+
+            // Fallback to default accepted entity types
+            return DefaultAcceptedEntityTypes;
+        }
+
+        private bool Accepts(GoogleMapsExternalSearchJobData config, EntityType entityTypeToEvaluate)
+        {
+            var configurableAcceptedEntityTypes = this.Accepts(config).ToArray();
+
+            return configurableAcceptedEntityTypes.Any(entityTypeToEvaluate.Is);
+        }
 
         /// <summary>Builds the queries.</summary>
         /// <param name="context">The context.</param>
@@ -55,23 +83,16 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 yield return externalSearchQuery;
             }
         }
-        private IEnumerable<IExternalSearchQuery> InternalBuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config = null)
+        private IEnumerable<IExternalSearchQuery> InternalBuildQueries(ExecutionContext context, IExternalSearchRequest request, GoogleMapsExternalSearchJobData config = null)
         {
-            if (config.TryGetValue(Constants.KeyName.AcceptedEntityType, out var customType) && !string.IsNullOrWhiteSpace(customType?.ToString()))
-            {
-                if (!request.EntityMetaData.EntityType.Is(customType.ToString()))
-                {
-                    yield break;
-                }
-            }
-            else if (!this.Accepts(request.EntityMetaData.EntityType))
+            if (!this.Accepts(config, request.EntityMetaData.EntityType))
                 yield break;
 
-            if (config.TryGetValue(Constants.KeyName.ControlFlag, out var controlFlag) && !string.IsNullOrWhiteSpace(controlFlag?.ToString()))
+            if (!string.IsNullOrWhiteSpace(config?.ControlFlag))
             {
-                if (request.EntityMetaData.Properties.GetValue(controlFlag.ToString()) != "true")
+                if (request.EntityMetaData.Properties.GetValue(config.ControlFlag) != "true")
                 {
-                    context.Log.LogTrace($"Skipped enrichment for record {request.EntityMetaData.OriginEntityCode} because VocabularyKey {controlFlag} value was not true. Actual value: {request.EntityMetaData.Properties.GetValue(controlFlag.ToString())}");
+                    context.Log.LogTrace($"Skipped enrichment for record {request.EntityMetaData.OriginEntityCode} because VocabularyKey {config.ControlFlag} value was not true. Actual value: {request.EntityMetaData.Properties.GetValue(config.ControlFlag)}");
                     yield break;
                 }
             }
@@ -95,18 +116,19 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             var entityType = request.EntityMetaData.EntityType;
 
-            var organizationName = GetValue(request, config, Constants.KeyName.OrgNameKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.OrganizationName);
-            var organizationAddress = GetValue(request, config, Constants.KeyName.OrgAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address);
-            var organizationZip = GetValue(request, config, Constants.KeyName.OrgZipCodeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressZipCode);
-            var organizationState = GetValue(request, config, Constants.KeyName.OrgStateKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
-            var organizationCity = GetValue(request, config, Constants.KeyName.OrgCityKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCity);
-            var organizationCountry = GetValue(request, config, Constants.KeyName.OrgCountryKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
-            var locationAddress = GetValue(request, config, Constants.KeyName.LocationAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
-            var userAddress = GetValue(request, config, Constants.KeyName.UserAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
-            var personAddress = GetValue(request, config, Constants.KeyName.PersonAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
-            var personAddressCity = GetValue(request, config, Constants.KeyName.PersonAddressCityKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
-            var latitude = GetValue(request, config, Constants.KeyName.LatitudeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
-            var longitude = GetValue(request, config, Constants.KeyName.LongitudeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var configMap           = config.ToDictionary();
+            var organizationName    = GetValue(request, configMap, Constants.KeyName.OrgNameKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.OrganizationName);
+            var organizationAddress = GetValue(request, configMap, Constants.KeyName.OrgAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Address);
+            var organizationZip     = GetValue(request, configMap, Constants.KeyName.OrgZipCodeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressZipCode);
+            var organizationState   = GetValue(request, configMap, Constants.KeyName.OrgStateKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var organizationCity    = GetValue(request, configMap, Constants.KeyName.OrgCityKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCity);
+            var organizationCountry = GetValue(request, configMap, Constants.KeyName.OrgCountryKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var locationAddress     = GetValue(request, configMap, Constants.KeyName.LocationAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var userAddress         = GetValue(request, configMap, Constants.KeyName.UserAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var personAddress       = GetValue(request, configMap, Constants.KeyName.PersonAddressKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var personAddressCity   = GetValue(request, configMap, Constants.KeyName.PersonAddressCityKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var latitude            = GetValue(request, configMap, Constants.KeyName.LatitudeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
+            var longitude           = GetValue(request, configMap, Constants.KeyName.LongitudeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
 
 
             if (organizationName != null && organizationName.Count > 0
@@ -632,20 +654,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             metadata.Properties[GoogleMapsVocabulary.Organization.BusinessStatus] = resultItem.Data.Result.BusinessStatus.PrintIfAvailable();
         }
 
-        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider)
-        {
-            var customTypes = config[Constants.KeyName.AcceptedEntityType].ToString();
-            if (string.IsNullOrWhiteSpace(customTypes))
-            {
-                AcceptedEntityTypes = new EntityType[] { config[Constants.KeyName.AcceptedEntityType].ToString() };
-            };
-
-            return AcceptedEntityTypes;
-        }
-
         public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
-            return InternalBuildQueries(context, request, config);
+            return InternalBuildQueries(context, request, new GoogleMapsExternalSearchJobData(config));
         }
 
         public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
@@ -669,6 +680,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         {
             return GetPrimaryEntityPreviewImage(context, result, request);
         }
+
+        // Since this is a configurable external search provider, theses methods should never be called
+        public override bool Accepts(EntityType entityType) => throw new NotSupportedException();
 
         public string Icon { get; } = Constants.Icon;
         public string Domain { get; } = Constants.Domain;
