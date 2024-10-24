@@ -49,7 +49,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 {
                     displayName = "Accepted Entity Type",
                     type = "input",
-                    isRequired = false,
+                    isRequired = true,
                     name = KeyName.AcceptedEntityType
                 },
                 new Control()
