@@ -50,6 +50,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
                 this.AdministrativeAreaLevel2 = group.Add(new VocabularyKey("AdministrativeAreaLevel2", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
                 this.Neighborhood = group.Add(new VocabularyKey("Neighborhood", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
 
+                this.InternationalPhoneNumberCountry = group.Add(new VocabularyKey("InternationalPhoneNumber-Country", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.InternationalPhoneNumberE164 = group.Add(new VocabularyKey("InternationalPhoneNumber-E164", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.InternationalPhoneNumberInternational = group.Add(new VocabularyKey("InternationalPhoneNumber-International", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.InternationalPhoneNumberLocation = group.Add(new VocabularyKey("InternationalPhoneNumber-Location", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
+                this.InternationalPhoneNumberRfc3966 = group.Add(new VocabularyKey("InternationalPhoneNumber-Rfc3966", VocabularyKeyDataType.Text, VocabularyKeyVisibility.Visible));
             });
 
         }
@@ -88,6 +93,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies
         public VocabularyKey AdministrativeAreaLevel2 { get; internal set; }
         public VocabularyKey Neighborhood { get; internal set; }
         public VocabularyKey BusinessStatus { get; internal set; }
+        public VocabularyKey InternationalPhoneNumberCountry { get; internal set; }
+        public VocabularyKey InternationalPhoneNumberE164 { get; internal set; }
+        public VocabularyKey InternationalPhoneNumberInternational { get; internal set; }
+        public VocabularyKey InternationalPhoneNumberLocation { get; internal set; }
+        public VocabularyKey InternationalPhoneNumberRfc3966 { get; internal set; }
     }
 
 }
