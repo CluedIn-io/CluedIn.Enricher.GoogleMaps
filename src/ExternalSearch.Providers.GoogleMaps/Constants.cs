@@ -36,112 +36,111 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
         public static AuthMethods AuthMethods { get; set; } = new AuthMethods
         {
-            token = new List<Control>()
+            Token = new List<Control>()
             {
                 new Control()
                 {
-                    displayName = "Api Key",
-                    type = "password",
-                    isRequired = true,
-                    name = KeyName.ApiToken
+                    DisplayName = "Api Key",
+                    Type = "password",
+                    IsRequired = true,
+                    Name = KeyName.ApiToken,
+                    Help = "The key to authenticate access to the Google Maps Platform API."
                 },
                 new Control()
                 {
-                    displayName = "Accepted Entity Type",
-                    type = "input",
-                    isRequired = true,
-                    name = KeyName.AcceptedEntityType
+                    DisplayName = "Accepted Entity Type",
+                    Type = "input",
+                    IsRequired = true,
+                    Name = KeyName.AcceptedEntityType,
+                    Help = "The entity type that defines the golden records you want to enrich (e.g., /Organization)."
                 },
                 new Control()
                 {
-                    displayName = "Vocabulary Key used to control whether it should be enriched",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.ControlFlag
+                    DisplayName = "Vocabulary Key used to control whether it should be enriched",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.ControlFlag,
+                    Help = "The vocabulary key that determines whether to enrich the golden record. If the value is True, the golden record will be enriched."
                 },
                 new Control()
                 {
-                    displayName = "Organization Name vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.OrgNameKey
+                    DisplayName = "Organization Name Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.OrgNameKey,
+                    Help = "The vocabulary key that contains the names of companies you want to enrich (e.g., organization.name)."
                 },
                 new Control()
                 {
-                    displayName = "Organization Address vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.OrgAddressKey
+                    DisplayName = "Organization Address Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.OrgAddressKey,
+                    Help = "The vocabulary key that contains the addresses of companies you want to enrich (e.g., organization.address)."
                 },
                  new Control()
                 {
-                    displayName = "Organization City vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.OrgCityKey
+                    DisplayName = "Organization City Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.OrgCityKey,
+                    Help = "The vocabulary key that contains the cities of companies you want to enrich (e.g., organization.city)."
                 },
                 new Control()
                 {
-                    displayName = "Organization Zip vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.OrgZipCodeKey
+                    DisplayName = "Organization Zip Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.OrgZipCodeKey,
+                    Help = "The vocabulary key that contains the ZIP Codes of companies you want to enrich (e.g., organization.address.zipCode)."
                 },
                 new Control()
                 {
-                    displayName = "Organization State vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.OrgStateKey
+                    DisplayName = "Organization State Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.OrgStateKey,
+                    Help = "The vocabulary key that contains the states of companies you want to enrich (e.g., organization.address.state)."
                 },
                 new Control()
                 {
-                    displayName = "Organization Country vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.OrgCountryKey
+                    DisplayName = "Organization Country Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.OrgCountryKey,
+                    Help = "The vocabulary key that contains the countries of companies you want to enrich (e.g., organization.country)."
                 },
                 new Control()
                 {
-                    displayName = "Location Address vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.LocationAddressKey
+                    DisplayName = "Location Address Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.LocationAddressKey,
+                    Help = "The vocabulary key that contains the addresses of locations you want to enrich (e.g., location.fullAddress)."
                 },
                 new Control()
                 {
-                    displayName = "User Address vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.UserAddressKey
+                    DisplayName = "User Address Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.UserAddressKey,
+                    Help = "The vocabulary key that contains the addresses of users you want to enrich (e.g., user.home.address)."
                 },
                 new Control()
                 {
-                    displayName = "Person Address vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.PersonAddressKey
+                    DisplayName = "Person Address Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.PersonAddressKey,
+                    Help = "The vocabulary key that contains the addresses of persons you want to enrich (e.g., person.home.address)."
                 },
                 new Control()
                 {
-                    displayName = "Person Address City vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.PersonAddressCityKey
-                },
-                new Control()
-                {
-                    displayName = "Latitude vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.LatitudeKey
-                },
-                new Control()
-                {
-                    displayName = "Longitude vocab key",
-                    type = "input",
-                    isRequired = false,
-                    name = KeyName.LongitudeKey
+                    DisplayName = "Person Address City Vocabulary Key",
+                    Type = "input",
+                    IsRequired = false,
+                    Name = KeyName.PersonAddressCityKey,
+                    Help = "The vocabulary key that contains the city addresses of persons you want to enrich (e.g., person.home.address.city)."
                 },
             }
         };
