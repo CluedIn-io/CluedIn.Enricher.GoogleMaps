@@ -82,7 +82,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Accepted Entity Type",
-                    Type = "input",
+                    Type = "entityTypeSelector",
                     IsRequired = true,
                     Name = KeyName.AcceptedEntityType,
                     Help = "The entity type that defines the golden records you want to enrich (e.g., /Organization)."
@@ -90,7 +90,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Vocabulary Key used to control whether it should be enriched",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.ControlFlag,
                     Help = "The vocabulary key that determines whether to enrich the golden record. If the value is True, the golden record will be enriched."
@@ -98,7 +98,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Organization Name Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.OrgNameKey,
                     Help = "The vocabulary key that contains the names of companies you want to enrich (e.g., organization.name)."
@@ -106,7 +106,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Organization Address Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.OrgAddressKey,
                     Help = "The vocabulary key that contains the addresses of companies you want to enrich (e.g., organization.address)."
@@ -114,7 +114,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                  new Control()
                 {
                     DisplayName = "Organization City Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.OrgCityKey,
                     Help = "The vocabulary key that contains the cities of companies you want to enrich (e.g., organization.city)."
@@ -122,7 +122,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Organization Zip Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.OrgZipCodeKey,
                     Help = "The vocabulary key that contains the ZIP Codes of companies you want to enrich (e.g., organization.address.zipCode)."
@@ -130,7 +130,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Organization State Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.OrgStateKey,
                     Help = "The vocabulary key that contains the states of companies you want to enrich (e.g., organization.address.state)."
@@ -138,7 +138,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Organization Country Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.OrgCountryKey,
                     Help = "The vocabulary key that contains the countries of companies you want to enrich (e.g., organization.country)."
@@ -146,7 +146,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Location Address Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.LocationAddressKey,
                     Help = "The vocabulary key that contains the addresses of locations you want to enrich (e.g., location.fullAddress)."
@@ -154,7 +154,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "User Address Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.UserAddressKey,
                     Help = "The vocabulary key that contains the addresses of users you want to enrich (e.g., user.home.address)."
@@ -162,7 +162,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Person Address Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.PersonAddressKey,
                     Help = "The vocabulary key that contains the addresses of persons you want to enrich (e.g., person.home.address)."
@@ -170,7 +170,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 new Control()
                 {
                     DisplayName = "Person Address City Vocabulary Key",
-                    Type = "input",
+                    Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.PersonAddressCityKey,
                     Help = "The vocabulary key that contains the city addresses of persons you want to enrich (e.g., person.home.address.city)."
