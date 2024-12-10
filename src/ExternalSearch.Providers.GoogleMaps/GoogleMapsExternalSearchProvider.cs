@@ -7,23 +7,24 @@ using CluedIn.ExternalSearch.Providers.GoogleMaps.Models;
 using CluedIn.ExternalSearch.Providers.GoogleMaps.Models.Companies;
 using CluedIn.ExternalSearch.Providers.GoogleMaps.Models.Locations;
 using CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies;
+using CluedIn.Core.Connectors;
+using CluedIn.Core.Data.Relational;
+using CluedIn.Core.Providers;
+using CluedIn.Core.Data.Vocabularies;
+using EntityType = CluedIn.Core.Data.EntityType;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-
-using CluedIn.Core.Data.Relational;
-using CluedIn.Core.Providers;
-using EntityType = CluedIn.Core.Data.EntityType;
-using CluedIn.Core.Data.Vocabularies;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
     /// <summary>The googlemaps graph external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
+    public class GoogleMapsExternalSearchProvider : ExternalSearchProviderBase, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider, IExternalSearchProviderWithVerifyConnection
     {
         /**********************************************************************************************************
          * FIELDS
@@ -454,6 +455,102 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
             return null;
+        }
+
+        public ConnectionVerificationResult VerifyConnection(ExecutionContext context, IReadOnlyDictionary<string, object> config)
+        {
+            IDictionary<string, object> configDict = config.ToDictionary(entry => entry.Key, entry => entry.Value);
+            var jobData = new GoogleMapsExternalSearchJobData(configDict);
+            var apiToken = jobData.ApiToken;
+            var client = new RestClient("https://maps.googleapis.com/maps/api");
+            var output = "json";
+            var placeDetailsEndpoint = $"place/details/{output}?";
+            var placeIdEndpoint = $"place/textsearch/{output}?";
+
+            var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
+            placeIdRequest.AddQueryParameter("key", apiToken);
+            placeIdRequest.AddQueryParameter("query", "Google" + " " + "1600 Amphitheatre Parkway, Mountain View, CA 94043.");
+
+            IRestResponse<PlaceIdResponse> placeIdResponse = null;
+            try
+            {
+               placeIdResponse = client.ExecuteAsync<PlaceIdResponse>(placeIdRequest).Result;
+            }
+            catch (Exception exception)
+            {
+                return new ConnectionVerificationResult(false, $"Could not return PlaceIdResponse from Google Maps { exception}");
+            }
+
+            if (!placeIdResponse.IsSuccessful)
+            {
+                return ConstructVerifyConnectionResponse(placeIdResponse);
+            }
+
+            if (placeIdResponse.StatusCode == HttpStatusCode.OK)
+            {
+                var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+                foreach (var placeId in placeIdResponse.Data.Results)
+                {
+                    request.AddParameter("placeid", placeId.PlaceId);
+                    request.AddParameter("key", apiToken);
+                }
+
+                IRestResponse<CompanyDetailsResponse> response = null;
+
+                try
+                {
+                    response = client.ExecuteAsync<CompanyDetailsResponse>(request).Result;
+                }
+                catch (Exception exception)
+                {
+                    return new ConnectionVerificationResult(false, $"Could not return CompanyDetailsResponse from Google Maps. {exception}");
+                }
+
+                if (!response.IsSuccessful)
+                {
+                    return ConstructVerifyConnectionResponse(placeIdResponse);
+                }
+
+                if (response == null)
+                {
+                    return new ConnectionVerificationResult(true, string.Empty);
+                }
+
+                return ConstructVerifyConnectionResponse(placeIdResponse);
+            }
+
+            return new ConnectionVerificationResult(true, string.Empty);
+        }
+
+        private ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(IRestResponse<T> response)
+        {
+            var errorMessageBase = $"{Constants.ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
+
+            if (response.ErrorException != null)
+            {
+                return new ConnectionVerificationResult(
+                    false,
+                    $"{errorMessageBase} {(!string.IsNullOrWhiteSpace(response.ErrorException.Message) ? response.ErrorException.Message : "This could be due to breaking changes in the external system")}."
+                );
+            }
+
+            dynamic responseData = response.Data;
+            if (responseData != null && responseData.Status != null &&
+                (responseData.Status.Equals("REQUEST_DENIED")) || response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return new ConnectionVerificationResult(false, $"{errorMessageBase} This could be due to an invalid API key.");
+            }
+
+            var regex = new Regex(@"\<(html|head|body|div|span|img|p\>|a href)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
+            var isHtml = regex.IsMatch(response.Content);
+
+            var errorMessage = response.IsSuccessful
+                ? string.Empty
+                : string.IsNullOrWhiteSpace(response.Content) || isHtml
+                    ? $"{errorMessageBase} This could be due to breaking changes in the external system."
+                    : $"{errorMessageBase} {response.Content}.";
+
+            return new ConnectionVerificationResult(response.IsSuccessful, errorMessage);
         }
 
         private IEntityMetadata CreateLocationMetadata(IExternalSearchQueryResult<LocationDetailsResponse> resultItem, IExternalSearchRequest request)
