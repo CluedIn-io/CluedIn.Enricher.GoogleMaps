@@ -309,7 +309,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
             catch(Exception exception)
             {
-                context.Log.LogError("Could not return PlaceIdResponse from Google Maps", exception);
+                context.Log.LogError("Could not fetch PlaceIdResponse from Google Maps", exception);
             }
 
             if (placeIdResponse == null)
@@ -370,7 +370,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     }
                     catch(Exception exception)
                     {
-                        context.Log.LogError("Could not return CompanyDetailsResponse from Google Maps", exception);
+                        context.Log.LogError("Could not fetch CompanyDetailsResponse from Google Maps", exception);
                     }
 
                     if (response == null)
@@ -469,7 +469,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
             placeIdRequest.AddQueryParameter("key", apiToken);
-            placeIdRequest.AddQueryParameter("query", "Google" + " " + "1600 Amphitheatre Parkway, Mountain View, CA 94043.");
+            placeIdRequest.AddQueryParameter("query", "Google 1600 Amphitheatre Parkway, Mountain View, CA 94043.");
 
             IRestResponse<PlaceIdResponse> placeIdResponse = null;
             try
@@ -478,7 +478,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
             catch (Exception exception)
             {
-                return new ConnectionVerificationResult(false, $"Could not return PlaceIdResponse from Google Maps { exception}");
+                return new ConnectionVerificationResult(false, $"Could not fetch company details from Google Maps. {exception.Message}");
             }
 
             if (!placeIdResponse.IsSuccessful)
@@ -486,40 +486,28 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 return ConstructVerifyConnectionResponse(placeIdResponse);
             }
 
-            if (placeIdResponse.StatusCode == HttpStatusCode.OK)
+            if (placeIdResponse.StatusCode != HttpStatusCode.OK)
+                return new ConnectionVerificationResult(true, string.Empty);
+
+            var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+            foreach (var placeId in placeIdResponse.Data.Results)
             {
-                var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-                foreach (var placeId in placeIdResponse.Data.Results)
-                {
-                    request.AddParameter("placeid", placeId.PlaceId);
-                    request.AddParameter("key", apiToken);
-                }
-
-                IRestResponse<CompanyDetailsResponse> response = null;
-
-                try
-                {
-                    response = client.ExecuteAsync<CompanyDetailsResponse>(request).Result;
-                }
-                catch (Exception exception)
-                {
-                    return new ConnectionVerificationResult(false, $"Could not return CompanyDetailsResponse from Google Maps. {exception}");
-                }
-
-                if (!response.IsSuccessful)
-                {
-                    return ConstructVerifyConnectionResponse(placeIdResponse);
-                }
-
-                if (response == null)
-                {
-                    return new ConnectionVerificationResult(true, string.Empty);
-                }
-
-                return ConstructVerifyConnectionResponse(placeIdResponse);
+                request.AddParameter("placeid", placeId.PlaceId);
+                request.AddParameter("key", apiToken);
             }
 
-            return new ConnectionVerificationResult(true, string.Empty);
+            IRestResponse<CompanyDetailsResponse> response;
+
+            try
+            {
+                response = client.ExecuteAsync<CompanyDetailsResponse>(request).Result;
+            }
+            catch (Exception exception)
+            {
+                return new ConnectionVerificationResult(false, $"Could not fetch CompanyDetailsResponse from Google Maps. {exception}");
+            }
+
+            return response == null ? new ConnectionVerificationResult(true, string.Empty) : ConstructVerifyConnectionResponse(placeIdResponse);
         }
 
         private ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(IRestResponse<T> response)
