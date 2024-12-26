@@ -73,7 +73,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             {
                 new Control()
                 {
-                    DisplayName = "Api Key",
+                    DisplayName = "API Key",
                     Type = "password",
                     IsRequired = true,
                     Name = KeyName.ApiToken,
