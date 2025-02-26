@@ -176,13 +176,25 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             if (organizationName != null && organizationName.Count > 0)
             {
                 foreach (var value in organizationName.Where(v => !NameFilter(v)))
-                    yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Name, value);
+                {
+                    var nameDict = new Dictionary<string, string>
+                    {
+                        {"companyName", value },
+                    };
+                    yield return new ExternalSearchQuery(this, entityType, nameDict);
+                }
             }
 
             if (organizationAddress != null && organizationAddress.Count > 0)
             {
                 foreach (var value in organizationAddress.Where(v => !AddressFilter(v)))
-                    yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Name, value);
+                {
+                    var addressDict = new Dictionary<string, string>
+                    {
+                        {"companyAddress", value }
+                    };
+                    yield return new ExternalSearchQuery(this, entityType, addressDict);
+                }
             }
 
             if (locationAddress != null && locationAddress.Count > 0)
@@ -191,7 +203,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 {
                     var locationDict = new Dictionary<string, string>
                             {
-                                {"locationName", locationNameValue }
+                                {"locationName", locationNameValue },
+                                {"coordinates", $"{latitude.FirstOrDefault() ?? string.Empty},{longitude.FirstOrDefault() ?? string.Empty}" }
                             };
 
                     yield return new ExternalSearchQuery(this, entityType, locationDict);
@@ -208,7 +221,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
                         var locationDict = new Dictionary<string, string>
                         {
-                            {"locationName", $"{locationNameValue}, {locationCityValue}" }
+                            {"locationName", $"{locationNameValue}, {locationCityValue}" },
+                            {"coordinates", $"{latitude.FirstOrDefault() ?? string.Empty},{longitude.FirstOrDefault() ?? string.Empty}" }
                         };
 
                         yield return new ExternalSearchQuery(this, entityType, locationDict);
@@ -221,19 +235,22 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 {
                     var locationDict = new Dictionary<string, string>
                         {
-                            {"locationName", locationNameValue }
+                            {"locationName", locationNameValue },
+                            {"coordinates", $"{latitude.FirstOrDefault() ?? string.Empty},{longitude.FirstOrDefault() ?? string.Empty}" }
                         };
 
                     yield return new ExternalSearchQuery(this, entityType, locationDict);
                 }
             }
+
             if (userAddress != null && userAddress.Count > 0)
             {
                 foreach (var locationNameValue in userAddress.Where(v => !AddressFilter(v)))
                 {
                     var locationDict = new Dictionary<string, string>
                     {
-                        {"locationName", locationNameValue }
+                        {"locationName", locationNameValue },
+                        {"coordinates", $"{latitude.FirstOrDefault() ?? string.Empty},{longitude.FirstOrDefault() ?? string.Empty}" }
                     };
 
                     yield return new ExternalSearchQuery(this, entityType, locationDict);
@@ -271,12 +288,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
             placeIdRequest.AddQueryParameter("key", apiToken);
 
-            if (query.QueryParameters.ContainsKey("companyName") && query.QueryParameters.ContainsKey("companyAddress"))
+            if (query.QueryParameters.ContainsKey("companyName") || query.QueryParameters.ContainsKey("companyAddress"))
             {
                 var input = new
                 {
-                    name = query.QueryParameters["companyName"].FirstOrDefault(),
-                    address = query.QueryParameters["companyAddress"].FirstOrDefault()
+                    name = query.QueryParameters.TryGetValue("companyName", out var name) ? name.FirstOrDefault() : string.Empty,
+                    address = query.QueryParameters.TryGetValue("companyAddress", out var address) ? address.FirstOrDefault() : string.Empty
                 };
                 var encodedInput = input.name + " " + input.address;
                 placeIdRequest.AddQueryParameter("query", encodedInput);
@@ -294,7 +311,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 {
                     var transformedCoordinates = string.Join("", query.QueryParameters["coordinates"]);
                     var splitCoordinates = transformedCoordinates.Split(',');
-                    placeIdRequest.AddParameter("locationbias", $"point:{splitCoordinates[0]}, {splitCoordinates[1]}");
+                    placeIdRequest.AddParameter("location", $"{splitCoordinates[0]} {splitCoordinates[1]}");
                 }
 
                 placeIdRequest.AddParameter("inputtype", "textquery");
@@ -305,7 +322,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             try
             {
                 context.Log.LogTrace("Making Google Maps call. Request: ", JsonUtility.Serialize(placeIdRequest.Parameters));
-                placeIdResponse = client.ExecuteTaskAsync<PlaceIdResponse>(placeIdRequest).Result;
+                placeIdResponse = client.ExecuteAsync<PlaceIdResponse>(placeIdRequest).Result;
             }
             catch(Exception exception)
             {
@@ -334,7 +351,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         request.AddParameter("key", apiToken);
                     }
 
-                    var response = client.ExecuteTaskAsync<LocationDetailsResponse>(request).Result;
+                    var response = client.ExecuteAsync<LocationDetailsResponse>(request).Result;
                     if (response.Data.Status.Equals("REQUEST_DENIED"))
                     {
                         yield break;
@@ -366,7 +383,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     try
                     {
                         context.Log.LogTrace("Making Google Maps call. Request: ", JsonUtility.Serialize(request.Parameters));
-                        response = client.ExecuteTaskAsync<CompanyDetailsResponse>(request).Result;
+                        response = client.ExecuteAsync<CompanyDetailsResponse>(request).Result;
                     }
                     catch(Exception exception)
                     {
