@@ -304,7 +304,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             {
                 if (query.QueryParameters.ContainsKey("locationName"))
                 {
-                    placeIdRequest.AddParameter("input", query.QueryParameters["locationName"].First());
+                    placeIdRequest.AddParameter("query", query.QueryParameters["locationName"].First());
                 }
 
                 if (query.QueryParameters.ContainsKey("coordinates"))
@@ -313,8 +313,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     var splitCoordinates = transformedCoordinates.Split(',');
                     placeIdRequest.AddParameter("location", $"{splitCoordinates[0]} {splitCoordinates[1]}");
                 }
-
-                placeIdRequest.AddParameter("inputtype", "textquery");
             }
 
             IRestResponse<PlaceIdResponse> placeIdResponse = null;
