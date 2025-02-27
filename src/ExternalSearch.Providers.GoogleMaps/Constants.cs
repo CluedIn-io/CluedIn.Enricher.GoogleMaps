@@ -182,6 +182,22 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.PersonAddressCityKey,
                     Help = "The vocabulary key that contains the city addresses of persons you want to enrich (e.g., person.home.address.city)."
                 },
+                new()
+                {
+                    DisplayName = "Latitude Vocabulary Key",
+                    Type = "vocabularyKeySelector",
+                    IsRequired = false,
+                    Name = KeyName.LatitudeKey,
+                    Help = "The vocabulary key that contains the latitude you want to enrich (e.g., organization.latitude)."
+                },
+                new()
+                {
+                    DisplayName = "Longitude Vocabulary Key",
+                    Type = "vocabularyKeySelector",
+                    IsRequired = false,
+                    Name = KeyName.LongitudeKey,
+                    Help = "The vocabulary key that contains the longitude you want to enrich (e.g., organization.longitude)."
+                },
             }
         };
 
