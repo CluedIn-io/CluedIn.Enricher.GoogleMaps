@@ -83,7 +83,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             if (!string.IsNullOrWhiteSpace(config?.ControlFlag))
             {
-                if (request.EntityMetaData.Properties.GetValue(config.ControlFlag) != "true")
+                if (request.EntityMetaData.Properties.GetValue(config.ControlFlag)?.ToLowerInvariant() != "true")
                 {
                     context.Log.LogTrace($"Skipped enrichment for record {request.EntityMetaData.OriginEntityCode} because VocabularyKey {config.ControlFlag} value was not true. Actual value: {request.EntityMetaData.Properties.GetValue(config.ControlFlag)}");
                     yield break;
