@@ -10,6 +10,7 @@ using CluedIn.Core.Providers;
 using CluedIn.Core.Webhooks;
 using CluedIn.ExternalSearch;
 using CluedIn.ExternalSearch.Providers.GoogleMaps;
+using CluedIn.ExternalSearch.Providers.GoogleMaps.Vocabularies;
 using CluedIn.Providers.Models;
 using Constants = CluedIn.ExternalSearch.Providers.GoogleMaps.Constants;
 
@@ -119,5 +120,16 @@ namespace CluedIn.Provider.GoogleMaps
         public IEnumerable<Control> Properties { get; } = Constants.Properties;
         public Guide Guide { get; } = Constants.Guide;
         public new IntegrationType Type { get; } = Constants.IntegrationType;
+        public bool SupportsEnricherV2 => true;
+        public Dictionary<string, object> ExtraInfo { get; } = new()
+        {
+            { "autoMap", true },
+            { "origin", Constants.ProviderName.ToCamelCase() },
+            { "originField", string.Empty },
+            { "nameKeyField", Constants.KeyName.OrgNameKey },
+            { "vocabKeyPrefix", GoogleMapsVocabulary.Organization.KeyPrefix},
+            { "autoSubmission", false },
+            { "dataSourceSetId", string.Empty },
+        };
     }
 }
