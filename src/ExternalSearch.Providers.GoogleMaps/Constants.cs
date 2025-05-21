@@ -19,7 +19,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     "type": "list-item",
                     "children": [
                       {
-                        "text": "Add the entity type to specify the golden records you want to enrich. Only golden records belonging to that entity type will be enriched."
+                        "text": "Add the business domain to specify the golden records you want to enrich. Only golden records belonging to that business domain will be enriched."
                       }
                     ]
                   },
@@ -69,25 +69,32 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
         public static AuthMethods AuthMethods { get; set; } = new AuthMethods
         {
-            Token = new List<Control>()
+            Token = new List<Control>
             {
-                new Control()
+                new()
                 {
-                    DisplayName = "Api Key",
+                    DisplayName = "API Key",
                     Type = "password",
                     IsRequired = true,
                     Name = KeyName.ApiToken,
-                    Help = "The key to authenticate access to the Google Maps Platform API."
+                    Help = "The key to authenticate access to the Google Maps Platform API.",
+                    ValidationRules = new List<Dictionary<string, string>>()
+                    {
+                        new() {
+                            { "regex", "\\s" },
+                            { "message", "Spaces are not allowed" }
+                        }
+                    },
                 },
-                new Control()
+                new()
                 {
-                    DisplayName = "Accepted Entity Type",
+                    DisplayName = "Accepted Business Domain",
                     Type = "entityTypeSelector",
                     IsRequired = true,
                     Name = KeyName.AcceptedEntityType,
-                    Help = "The entity type that defines the golden records you want to enrich (e.g., /Organization)."
+                    Help = "The business domain that defines the golden records you want to enrich (e.g., /Organization)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Vocabulary Key used to control whether it should be enriched",
                     Type = "vocabularyKeySelector",
@@ -95,7 +102,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.ControlFlag,
                     Help = "The vocabulary key that determines whether to enrich the golden record. If the value is True, the golden record will be enriched."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Organization Name Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -103,7 +110,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.OrgNameKey,
                     Help = "The vocabulary key that contains the names of companies you want to enrich (e.g., organization.name)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Organization Address Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -111,7 +118,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.OrgAddressKey,
                     Help = "The vocabulary key that contains the addresses of companies you want to enrich (e.g., organization.address)."
                 },
-                 new Control()
+                 new()
                 {
                     DisplayName = "Organization City Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -119,7 +126,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.OrgCityKey,
                     Help = "The vocabulary key that contains the cities of companies you want to enrich (e.g., organization.city)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Organization Zip Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -127,7 +134,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.OrgZipCodeKey,
                     Help = "The vocabulary key that contains the ZIP Codes of companies you want to enrich (e.g., organization.address.zipCode)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Organization State Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -135,7 +142,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.OrgStateKey,
                     Help = "The vocabulary key that contains the states of companies you want to enrich (e.g., organization.address.state)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Organization Country Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -143,7 +150,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.OrgCountryKey,
                     Help = "The vocabulary key that contains the countries of companies you want to enrich (e.g., organization.country)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Location Address Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -151,7 +158,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.LocationAddressKey,
                     Help = "The vocabulary key that contains the addresses of locations you want to enrich (e.g., location.fullAddress)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "User Address Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -159,7 +166,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.UserAddressKey,
                     Help = "The vocabulary key that contains the addresses of users you want to enrich (e.g., user.home.address)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Person Address Vocabulary Key",
                     Type = "vocabularyKeySelector",
@@ -167,13 +174,29 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     Name = KeyName.PersonAddressKey,
                     Help = "The vocabulary key that contains the addresses of persons you want to enrich (e.g., person.home.address)."
                 },
-                new Control()
+                new()
                 {
                     DisplayName = "Person Address City Vocabulary Key",
                     Type = "vocabularyKeySelector",
                     IsRequired = false,
                     Name = KeyName.PersonAddressCityKey,
                     Help = "The vocabulary key that contains the city addresses of persons you want to enrich (e.g., person.home.address.city)."
+                },
+                new()
+                {
+                    DisplayName = "Latitude Vocabulary Key",
+                    Type = "vocabularyKeySelector",
+                    IsRequired = false,
+                    Name = KeyName.LatitudeKey,
+                    Help = "The vocabulary key that contains the latitude you want to enrich (e.g., organization.latitude)."
+                },
+                new()
+                {
+                    DisplayName = "Longitude Vocabulary Key",
+                    Type = "vocabularyKeySelector",
+                    IsRequired = false,
+                    Name = KeyName.LongitudeKey,
+                    Help = "The vocabulary key that contains the longitude you want to enrich (e.g., organization.longitude)."
                 },
             }
         };
