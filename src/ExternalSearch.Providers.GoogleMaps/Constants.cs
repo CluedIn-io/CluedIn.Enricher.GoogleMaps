@@ -73,7 +73,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         public static string Icon { get; set; } = "Resources.Google_Maps_icon_2020.svg";
         public static string Domain { get; set; } = "N/A";
 
-        public static AuthMethods AuthMethods { get; set; } = new AuthMethods
+        public static AuthMethods AuthMethods { get; set; } = new()
         {
             Token = new List<Control>
             {
@@ -84,13 +84,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     IsRequired = true,
                     Name = KeyName.ApiToken,
                     Help = "The key to authenticate access to the Google Maps Platform API.",
-                    ValidationRules = new List<Dictionary<string, string>>()
-                    {
-                        new() {
+                    ValidationRules =
+                    [
+                        new Dictionary<string, string>
+                        {
                             { "regex", "\\s" },
                             { "message", "Spaces are not allowed" }
                         }
-                    },
+                    ],
                 },
                 new()
                 {
