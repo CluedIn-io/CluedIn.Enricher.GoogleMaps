@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using static CluedIn.ExternalSearch.Providers.GoogleMaps.Constants;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
@@ -332,10 +333,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 yield break;
             }
 
-            if (placeIdResponse.Data.Status.Equals("REQUEST_DENIED"))
+            switch (placeIdResponse.Data.Status)
             {
-                context.Log.LogError("REQUEST DENIED by Google Maps");
-                yield break;
+                case GoogleMapsResponseStatus.ZeroResults:
+                    context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
+                    yield break;
+                case GoogleMapsResponseStatus.RequestDenied:
+                    context.Log.LogError("REQUEST DENIED returned by Google Maps. Please verify the API Key");
+                    yield break;
             }
 
             if (placeIdResponse.StatusCode == HttpStatusCode.OK)
@@ -350,9 +355,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     }
 
                     var response = client.ExecuteAsync<LocationDetailsResponse>(request).Result;
-                    if (response.Data.Status.Equals("REQUEST_DENIED"))
+                    switch (response.Data.Status)
                     {
-                        yield break;
+                        case GoogleMapsResponseStatus.ZeroResults:
+                            context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
+                            yield break;
+                        case GoogleMapsResponseStatus.RequestDenied:
+                            context.Log.LogError("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
+                            yield break;
                     }
 
                     if (response.StatusCode == HttpStatusCode.OK)
@@ -393,10 +403,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         yield break;
                     }
 
-                    if (response.Data.Status.Equals("REQUEST_DENIED"))
+                    switch (response.Data.Status)
                     {
-                        context.Log.LogError("REQUEST DENIED by Google Maps");
-                        yield break;
+                        case GoogleMapsResponseStatus.ZeroResults:
+                            context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
+                            yield break;
+                        case GoogleMapsResponseStatus.RequestDenied:
+                            context.Log.LogError("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
+                            yield break;
                     }
 
                     if (response.StatusCode == HttpStatusCode.OK)
@@ -539,7 +553,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             dynamic responseData = response.Data;
             if (responseData != null && responseData.Status != null &&
-                (responseData.Status.Equals("REQUEST_DENIED")) || response.StatusCode == HttpStatusCode.Unauthorized)
+                (responseData.Status.Equals(GoogleMapsResponseStatus.RequestDenied)) || response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 return new ConnectionVerificationResult(false, $"{errorMessageBase} This could be due to an invalid API key.");
             }
