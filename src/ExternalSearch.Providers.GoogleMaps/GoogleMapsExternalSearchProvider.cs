@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using static CluedIn.ExternalSearch.Providers.GoogleMaps.Constants;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
