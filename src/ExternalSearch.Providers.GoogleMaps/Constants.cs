@@ -63,11 +63,17 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             public const string LongitudeKey = "longitudeKey";
         }
 
+        public struct GoogleMapsResponseStatus
+        {
+            public const string ZeroResults = "ZERO_RESULTS";
+            public const string RequestDenied = "REQUEST_DENIED";
+        }
+
         public static string About { get; set; } = "Google Maps is a web mapping platform and consumer application offered by Google. It offers satellite imagery, aerial photography, street maps, 360° interactive panoramic views of streets, real-time traffic conditions, and route planning for traveling by foot, car, air and public transportation.";
         public static string Icon { get; set; } = "Resources.Google_Maps_icon_2020.svg";
         public static string Domain { get; set; } = "N/A";
 
-        public static AuthMethods AuthMethods { get; set; } = new AuthMethods
+        public static AuthMethods AuthMethods { get; set; } = new()
         {
             Token = new List<Control>
             {
@@ -78,13 +84,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     IsRequired = true,
                     Name = KeyName.ApiToken,
                     Help = "The key to authenticate access to the Google Maps Platform API.",
-                    ValidationRules = new List<Dictionary<string, string>>()
-                    {
-                        new() {
+                    ValidationRules =
+                    [
+                        new Dictionary<string, string>
+                        {
                             { "regex", "\\s" },
                             { "message", "Spaces are not allowed" }
                         }
-                    },
+                    ],
                 },
                 new()
                 {
