@@ -728,20 +728,5 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
         public IEnumerable<Control> Properties { get; } = Constants.Properties;
         public Guide Guide { get; } = Constants.Guide;
         public IntegrationType Type { get; } = Constants.IntegrationType;
-        public bool SupportsEnricherV2 => true;
-        public Dictionary<string, object> ExtraInfo { get; } = new()
-        {
-            { "autoMap", true },
-            { "useEnricherOriginEntityCode", true },
-            { "supportConfidenceScore", false }, // for UI
-            { "minConfidenceScore", 0 }, // for UI
-            { "maxConfidenceScore", 100 }, // for UI
-            { "origin", ProviderName.ToCamelCase() },
-            { "originField", string.Empty },
-            { "nameKeyField", KeyName.OrgNameKey },
-            { "vocabKeyPrefix", GoogleMapsVocabulary.Organization.KeyPrefix},
-            { "autoSubmission", false },
-            { "dataSourceSetId", string.Empty },
-        };
     }
 }
