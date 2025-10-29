@@ -575,9 +575,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             dynamic responseData = response.Data;
             if (responseData != null && responseData.Status != null &&
-                (responseData.Status.Equals(GoogleMapsResponseStatus.RequestDenied)) || response.StatusCode == HttpStatusCode.Unauthorized)
+                responseData.Status.Equals(GoogleMapsResponseStatus.RequestDenied) || response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                return new ConnectionVerificationResult(false, $"{errorMessageBase} This could be due to an invalid API key.");
+                return new ConnectionVerificationResult(false, $"{ProviderName} returned {(int)HttpStatusCode.Unauthorized} {HttpStatusCode.Unauthorized}. This could be due to an invalid API key.");
             }
 
             var regex = new Regex(@"\<(html|head|body|div|span|img|p\>|a href)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
