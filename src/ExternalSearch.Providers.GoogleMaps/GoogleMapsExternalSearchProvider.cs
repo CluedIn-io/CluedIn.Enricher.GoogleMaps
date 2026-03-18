@@ -81,15 +81,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             if (!Accepts(config, request.EntityMetaData.EntityType))
                 yield break;
 
-            if (!string.IsNullOrWhiteSpace(config?.ControlFlag))
-            {
-                if (request.EntityMetaData.Properties.GetValue(config.ControlFlag)?.ToLowerInvariant() != "true")
-                {
-                    context.Log.LogTrace($"Skipped enrichment for record {request.EntityMetaData.OriginEntityCode} because VocabularyKey {config.ControlFlag} value was not true. Actual value: {request.EntityMetaData.Properties.GetValue(config.ControlFlag)}");
-                    yield break;
-                }
-            }
-
             //var entityType = request.EntityMetaData.EntityType;
 
             //if (string.IsNullOrEmpty(this.TokenProvider.ApiToken))
@@ -97,6 +88,16 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             var existingResults = request.GetQueryResults<CompanyDetailsResponse>(this).ToList();
             var entityType = request.EntityMetaData.EntityType;
+            var entityName = !string.IsNullOrEmpty(request.EntityMetaData.Name) ? request.EntityMetaData.Name : request.EntityMetaData.DisplayName;
+
+            if (!string.IsNullOrWhiteSpace(config?.ControlFlag))
+            {
+                if (request.EntityMetaData.Properties.GetValue(config.ControlFlag)?.ToLowerInvariant() != "true")
+                {
+                    context.Log.LogTrace($"Skipped enrichment for {entityName} because VocabularyKey {config.ControlFlag} value was not true. Actual value: {request.EntityMetaData.Properties.GetValue(config.ControlFlag)}");
+                    throw new Exception($"Unable to generate queries for {entityName}. VocabularyKey {config.ControlFlag} value was not true. Actual value: {request.EntityMetaData.Properties.GetValue(config.ControlFlag)}");
+                }
+            }
 
             var configMap           = config?.ToDictionary();
             var organizationName    = GetValue(request, configMap, KeyName.OrgNameKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.OrganizationName);
@@ -112,6 +113,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var latitude            = GetValue(request, configMap, KeyName.LatitudeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
             var longitude           = GetValue(request, configMap, KeyName.LongitudeKey, Core.Data.Vocabularies.Vocabularies.CluedInOrganization.AddressCountryName);
 
+            var queriesGenerated = false;
 
             if (organizationName is { Count: > 0 } && 
                 organizationAddress is { Count: > 0 } && 
@@ -137,7 +139,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                                             {"companyName", nameValue },
                                             {"companyAddress", $"{addressValue}, {cityValue}, {zipValue}, {stateValue}, {countryValue}" }
                                         };
-                                        
+                                        queriesGenerated = true;
                                         yield return new ExternalSearchQuery(this, entityType, companyDict);
                                     }
                                 }
@@ -157,6 +159,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                             {"companyName", nameValue },
                             {"companyAddress", addressValue }
                         };
+                        queriesGenerated = true;
                         yield return new ExternalSearchQuery(this, entityType, companyDict);
                     }
                 }
@@ -170,6 +173,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     {
                         {"companyName", value },
                     };
+                    queriesGenerated = true;
                     yield return new ExternalSearchQuery(this, entityType, nameDict);
                 }
             }
@@ -182,6 +186,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     {
                         {"companyAddress", value }
                     };
+                    queriesGenerated = true;
                     yield return new ExternalSearchQuery(this, entityType, addressDict);
                 }
             }
@@ -195,7 +200,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                                 {"locationName", locationNameValue },
                                 {"coordinates", $"{latitude.FirstOrDefault() ?? string.Empty},{longitude.FirstOrDefault() ?? string.Empty}" }
                             };
-
+                    queriesGenerated = true;
                     yield return new ExternalSearchQuery(this, entityType, locationDict);
                 }
             }
@@ -213,7 +218,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                             {"locationName", $"{locationNameValue}, {locationCityValue}" },
                             {"coordinates", $"{latitude.FirstOrDefault() ?? string.Empty},{longitude.FirstOrDefault() ?? string.Empty}" }
                         };
-
+                        queriesGenerated = true;
                         yield return new ExternalSearchQuery(this, entityType, locationDict);
                     }
                 }
@@ -227,7 +232,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                             {"locationName", locationNameValue },
                             {"coordinates", $"{latitude.FirstOrDefault() ?? string.Empty},{longitude.FirstOrDefault() ?? string.Empty}" }
                         };
-
+                    queriesGenerated = true;
                     yield return new ExternalSearchQuery(this, entityType, locationDict);
                 }
             }
@@ -246,7 +251,26 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 }
             }
 
+            if ((IsOrganizationInfoEmpty() && IsLocationInfoEmpty()) || (!existingResults.Any() && !queriesGenerated))
+            {
+                throw new Exception(
+                    $"Unable to generate queries for {entityName}. Missing required information. Please refer to https://documentation.cluedin.net/preparation/enricher/google-maps");
+            }
+
             yield break;
+
+            bool IsLocationInfoEmpty() =>
+                !locationAddress.Any() &&
+                !userAddress.Any() &&
+                !personAddress.Any() &&
+                !personAddressCity.Any();
+
+            bool IsOrganizationInfoEmpty() =>
+                !organizationName.Any() &&
+                !organizationAddress.Any() &&
+                !organizationZip.Any() &&
+                !organizationCity.Any() &&
+                !organizationCountry.Any();
 
             bool AddressFilter(string value)
             {
@@ -305,7 +329,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             {
                 if (query.QueryParameters.TryGetValue("locationName", out var parameter))
                 {
-                    placeIdRequest.AddParameter("query", parameter.First());
+                    placeIdRequest.AddParameter("query", parameter.FirstOrDefault() ?? string.Empty);
                 }
 
                 if (query.QueryParameters.TryGetValue("coordinates", out var queryParameter))
@@ -339,7 +363,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
                     yield break;
                 case GoogleMapsResponseStatus.RequestDenied:
-                    context.Log.LogError("REQUEST DENIED returned by Google Maps. Please verify the API Key");
+                    context.Log.LogWarning("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
                     yield break;
             }
 
@@ -361,7 +385,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                             context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
                             yield break;
                         case GoogleMapsResponseStatus.RequestDenied:
-                            context.Log.LogError("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
+                            context.Log.LogWarning("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
                             yield break;
                     }
 
@@ -373,8 +397,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                                 yield return new ExternalSearchQueryResult<LocationDetailsResponse>(query, response.Data);
                             break;
                         }
-                        case HttpStatusCode.NoContent or HttpStatusCode.NotFound:
-                            yield break;
                         default:
                         {
                             if (response.ErrorException != null)
@@ -402,25 +424,20 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     }
                     catch(Exception exception)
                     {
-                        context.Log.LogError($"Could not fetch CompanyDetailsResponse from Google Maps. Exception: {exception}");
+                        context.Log.LogWarning($"Could not fetch CompanyDetailsResponse from Google Maps. Exception: {exception}");
                     }
 
-                    if (response == null)
-                    {
-                        yield break;
-                    }
-
-                    switch (response.Data.Status)
+                    switch (response?.Data.Status)
                     {
                         case GoogleMapsResponseStatus.ZeroResults:
                             context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
                             yield break;
                         case GoogleMapsResponseStatus.RequestDenied:
-                            context.Log.LogError("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
+                            context.Log.LogWarning("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
                             yield break;
                     }
 
-                    switch (response.StatusCode)
+                    switch (response?.StatusCode)
                     {
                         case HttpStatusCode.OK:
                         {
@@ -428,15 +445,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                                 yield return new ExternalSearchQueryResult<CompanyDetailsResponse>(query, response.Data);
                             break;
                         }
-                        case HttpStatusCode.NoContent:
-                        case HttpStatusCode.NotFound:
-                            yield break;
                         default:
                         {
-                            if (response.ErrorException != null)
+                            if (response?.ErrorException != null)
                                 throw new AggregateException(response.ErrorException.Message, response.ErrorException);
 
-                            throw new ApplicationException("Could not execute external search query - StatusCode:" + response.StatusCode + "; Content: " + response.Content);
+                            throw new ApplicationException("Could not execute external search query - StatusCode:" + response?.StatusCode + "; Content: " + response?.Content);
                         }
                     }
                 }
@@ -561,9 +575,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             dynamic responseData = response.Data;
             if (responseData != null && responseData.Status != null &&
-                (responseData.Status.Equals(GoogleMapsResponseStatus.RequestDenied)) || response.StatusCode == HttpStatusCode.Unauthorized)
+                responseData.Status.Equals(GoogleMapsResponseStatus.RequestDenied) || response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                return new ConnectionVerificationResult(false, $"{errorMessageBase} This could be due to an invalid API key.");
+                return new ConnectionVerificationResult(false, $"{ProviderName} returned {(int)HttpStatusCode.Unauthorized} {HttpStatusCode.Unauthorized}. This could be due to an invalid API key.");
             }
 
             var regex = new Regex(@"\<(html|head|body|div|span|img|p\>|a href)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
@@ -649,7 +663,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             //metadata.Properties[GoogleMapsVocabulary.Organization.AddressComponents] = JsonUtility.Serialize(resultItem.Data.Result.AddressComponents);
             foreach (var component in resultItem.Data.Result.AddressComponents)
             {
-                switch (component.Types.First())
+                switch (component.Types.FirstOrDefault())
                 {
                     case "street_number":
                         metadata.Properties[GoogleMapsVocabulary.Organization.StreetNumber] = component.ShortName;
