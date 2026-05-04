@@ -310,7 +310,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             const string placeDetailsEndpoint = $"place/details/{output}?";
             const string placeIdEndpoint = $"place/textsearch/{output}?";
 
-            var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
+            var placeIdRequest = new RestRequest(placeIdEndpoint, Method.Get);
             placeIdRequest.AddQueryParameter("key", apiToken);
 
             if (query.QueryParameters.ContainsKey("companyName") || query.QueryParameters.ContainsKey("companyAddress"))
@@ -340,7 +340,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 }
             }
 
-            IRestResponse<PlaceIdResponse> placeIdResponse = null;
+            RestResponse<PlaceIdResponse> placeIdResponse = null;
 
             try
             {
@@ -371,7 +371,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             {
                 if (placeIdResponse.Data != null && isCompany == false)
                 {
-                    var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+                    var request = new RestRequest(placeDetailsEndpoint, Method.Get);
                     foreach (var placeId in placeIdResponse.Data.Results)
                     {
                         request.AddParameter("placeid", placeId.PlaceId);
@@ -408,14 +408,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 }
                 else
                 {
-                    var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+                    var request = new RestRequest(placeDetailsEndpoint, Method.Get);
                     foreach (var placeId in placeIdResponse.Data.Results)
                     {
                         request.AddParameter("placeid", placeId.PlaceId);
                         request.AddParameter("key", apiToken);
                     }
 
-                    IRestResponse<CompanyDetailsResponse> response = null;
+                    RestResponse<CompanyDetailsResponse> response = null;
 
                     try
                     {
@@ -518,11 +518,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             const string placeDetailsEndpoint = $"place/details/{output}?";
             const string placeIdEndpoint = $"place/textsearch/{output}?";
 
-            var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
+            var placeIdRequest = new RestRequest(placeIdEndpoint, Method.Get);
             placeIdRequest.AddQueryParameter("key", apiToken);
             placeIdRequest.AddQueryParameter("query", "Google 1600 Amphitheatre Parkway, Mountain View, CA 94043.");
 
-            IRestResponse<PlaceIdResponse> placeIdResponse;
+            RestResponse<PlaceIdResponse> placeIdResponse;
             try
             {
                placeIdResponse = client.ExecuteAsync<PlaceIdResponse>(placeIdRequest).Result;
@@ -540,14 +540,14 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             if (placeIdResponse.StatusCode != HttpStatusCode.OK)
                 return new ConnectionVerificationResult(true, string.Empty);
 
-            var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+            var request = new RestRequest(placeDetailsEndpoint, Method.Get);
             foreach (var placeId in placeIdResponse.Data.Results)
             {
                 request.AddParameter("placeid", placeId.PlaceId);
                 request.AddParameter("key", apiToken);
             }
 
-            IRestResponse<CompanyDetailsResponse> response;
+            RestResponse<CompanyDetailsResponse> response;
 
             try
             {
@@ -561,7 +561,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             return ConstructVerifyConnectionResponse(response);
         }
 
-        private static ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(IRestResponse<T> response)
+        private static ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(RestResponse<T> response)
         {
             var errorMessageBase = $"{ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
 
