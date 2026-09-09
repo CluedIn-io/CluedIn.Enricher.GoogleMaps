@@ -284,4 +284,4 @@ two.
 - [x] Integration tests — `CluedIn.Testing.Base`/`CluedIn.CrawlerIntegrationTesting` migrated in their own repos and published; `Packages.props`/`Integration.Tests.csproj` updated to reference the suffixed package IDs (`.470`/`.480`/`.500`); `runIntegrationTests` flipped to default `true`; dead `integration-test.ps1` script reference removed; real `dotnet test` passes on all three legs
 - [x] Push branch and confirm the actual Azure DevOps pipeline run is green end-to-end — PR #55, all three legs (4.7.0, 4.8.0, 5.0.0-alpha.* at the time) plus the `Multi-version: publish` job passed in CI on the first run
 - [x] Re-confirm CI is still green after switching the third leg from 5.0.0-alpha.* to 5.0.0-beta.* — re-ran on PR #55, all legs + publish passed again
-- [ ] Re-confirm CI is still green now that integration tests are enabled and the test-support package references changed
+- [x] Re-confirm CI is still green now that integration tests are enabled and the test-support package references changed — all three `Multi-version build+test` legs, all three new `Integration tests` legs, and `Multi-version: publish` passed
