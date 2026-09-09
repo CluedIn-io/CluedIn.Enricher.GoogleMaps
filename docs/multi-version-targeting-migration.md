@@ -162,7 +162,8 @@ restore -p:_CluedIn=4.7.0` and `4.8.0`, both succeeded immediately).
 
 ## Step 6 — API compatibility audit across 4.7.0 / 4.8.0 / 5.0.0-alpha.*
 
-Status: **`src/` done and verified locally; integration tests blocked (see below)**
+Status: **`src/` done, verified locally and in real CI (PR #55 — all three legs + publish passed);
+integration tests blocked (see below)**
 
 All builds below were run locally against the real feeds (`dotnet restore`/`dotnet build -p:_CluedIn=<v>
 -p:CluedInMultiVersionTargetFramework=<tfm>`), not just reasoned about.
@@ -241,4 +242,4 @@ two.
 - [x] `GitVersion.yml` — `next-version: 1.0`; `ignore.commits-before: 2026-06-18T00:00:00`
 - [x] `src/` builds clean (0 errors) for all three legs, verified locally via real `dotnet restore`/`build`
 - [ ] Integration tests — **known gap**, not fixable from this repo (see Step 6); `runIntegrationTests` left at default `false`
-- [ ] Push branch and confirm the actual Azure DevOps pipeline run is green end-to-end (local builds don't exercise the jobs-template's pack/publish/GitVersion-tool steps)
+- [x] Push branch and confirm the actual Azure DevOps pipeline run is green end-to-end — PR #55, all three legs (4.7.0, 4.8.0, 5.0.0-alpha.*) plus the `Multi-version: publish` job passed in CI on the first run
