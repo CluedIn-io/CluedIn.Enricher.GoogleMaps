@@ -259,4 +259,4 @@ two.
 - [x] `src/` builds clean (0 errors) for all three legs, verified locally via real `dotnet restore`/`build`
 - [ ] Integration tests — **known gap**, not fixable from this repo (see Step 6); `runIntegrationTests` left at default `false`
 - [x] Push branch and confirm the actual Azure DevOps pipeline run is green end-to-end — PR #55, all three legs (4.7.0, 4.8.0, 5.0.0-alpha.* at the time) plus the `Multi-version: publish` job passed in CI on the first run
-- [ ] Re-confirm CI is still green after switching the third leg from 5.0.0-alpha.* to 5.0.0-beta.*
+- [x] Re-confirm CI is still green after switching the third leg from 5.0.0-alpha.* to 5.0.0-beta.* — re-ran on PR #55, all legs + publish passed again
