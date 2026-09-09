@@ -357,7 +357,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 yield break;
             }
 
-            switch (placeIdResponse.Data.Status)
+            switch (placeIdResponse.Data?.Status)
             {
                 case GoogleMapsResponseStatus.ZeroResults:
                     context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
@@ -367,19 +367,26 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     yield break;
             }
 
+            var placeResults = placeIdResponse.Data?.Results;
+            if (placeResults is not { Count: > 0 })
+            {
+                context.Log.LogInformation("Google Maps returned no place results.");
+                yield break;
+            }
+
             if (placeIdResponse.StatusCode == HttpStatusCode.OK)
             {
-                if (placeIdResponse.Data != null && isCompany == false)
+                if (!isCompany)
                 {
-                    var request = new RestRequest(placeDetailsEndpoint, Method.Get);
-                    foreach (var placeId in placeIdResponse.Data.Results)
+                    var request = new RestRequest(placeDetailsEndpoint);
+                    foreach (var placeId in placeResults)
                     {
-                        request.AddParameter("placeid", placeId.PlaceId);
-                        request.AddParameter("key", apiToken);
+                        request.AddQueryParameter("place_id", placeId.PlaceId);
+                        request.AddQueryParameter("key", apiToken);
                     }
 
                     var response = client.ExecuteAsync<LocationDetailsResponse>(request).Result;
-                    switch (response.Data.Status)
+                    switch (response.Data?.Status)
                     {
                         case GoogleMapsResponseStatus.ZeroResults:
                             context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
@@ -409,10 +416,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 else
                 {
                     var request = new RestRequest(placeDetailsEndpoint, Method.Get);
-                    foreach (var placeId in placeIdResponse.Data.Results)
+                    foreach (var placeId in placeResults)
                     {
-                        request.AddParameter("placeid", placeId.PlaceId);
-                        request.AddParameter("key", apiToken);
+                        request.AddQueryParameter("place_id", placeId.PlaceId);
+                        request.AddQueryParameter("key", apiToken);
                     }
 
                     RestResponse<CompanyDetailsResponse> response = null;
@@ -427,7 +434,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         context.Log.LogWarning($"Could not fetch CompanyDetailsResponse from Google Maps. Exception: {exception}");
                     }
 
-                    switch (response?.Data.Status)
+                    switch (response?.Data?.Status)
                     {
                         case GoogleMapsResponseStatus.ZeroResults:
                             context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
@@ -543,8 +550,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             var request = new RestRequest(placeDetailsEndpoint, Method.Get);
             foreach (var placeId in placeIdResponse.Data.Results)
             {
-                request.AddParameter("placeid", placeId.PlaceId);
-                request.AddParameter("key", apiToken);
+                request.AddQueryParameter("place_id", placeId.PlaceId);
+                request.AddQueryParameter("key", apiToken);
             }
 
             RestResponse<CompanyDetailsResponse> response;
