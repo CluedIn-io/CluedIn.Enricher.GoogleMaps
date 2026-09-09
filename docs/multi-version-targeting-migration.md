@@ -30,7 +30,21 @@ hand-specified in `azure-pipelines.yml`.
 |---|---|---|
 | 4.7.0 | net6.0 | `.470` |
 | 4.8.0 | net6.0 | `.480` |
-| 5.0.0-alpha.* | net10.0 | `.50` |
+| 5.0.0-beta.* | net10.0 | `.50` |
+
+> **Correction (2026-09-09, after initial merge to CI):** originally targeted `5.0.0-alpha.*`,
+> matching what the reference docs used. The CluedIn 5.0 line has since progressed to a beta
+> channel — confirmed by restoring a throwaway project: `5.0.0-alpha.*` still resolves (frozen at
+> `5.0.0-alpha.695`), but this repo's own floating default `5.0.0-*` (used everywhere else -
+> `Packages.props`, other repos' `Directory.Build.props` net10.0 fallback) now resolves to
+> `5.0.0-beta.573`, i.e. beta is current and alpha is stale. Updated `multiVersionCluedInTargets` to
+> `5.0.0-beta.*` accordingly. **Lesson for migrating the other repos:** don't copy `5.0.0-alpha.*`
+> from this doc or the older reference docs verbatim — restore a throwaway project against
+> `5.0.0-*` first and use whatever prerelease label that actually resolves to, since the label
+> shifts over the CluedIn release cycle (alpha → beta → rc → stable). Re-verified locally that both
+> src projects and the integration test project still build clean against `5.0.0-beta.*`/net10.0,
+> and that RestSharp still resolves to 114.0.0 there (same as under alpha — the Step 6 guards are
+> unaffected).
 
 4.6.0 was deliberately excluded (decision made 2026-09-09) — kept the version window aligned with
 `CluedIn.Crawling.MasterDataServices` rather than the wider `CluedIn.Connector.AzureEventHubs`
@@ -68,7 +82,7 @@ jobs:
       multiVersionCluedInTargets:
         - cluedInVersion: '4.7.0'
         - cluedInVersion: '4.8.0'
-        - cluedInVersion: '5.0.0-alpha.*'
+        - cluedInVersion: '5.0.0-beta.*'
 ```
 
 Also added the `probeCluedInVersion` pipeline parameter (one-off check against a version outside
@@ -160,7 +174,7 @@ restore -p:_CluedIn=4.7.0` and `4.8.0`, both succeeded immediately).
 
 ---
 
-## Step 6 — API compatibility audit across 4.7.0 / 4.8.0 / 5.0.0-alpha.*
+## Step 6 — API compatibility audit across 4.7.0 / 4.8.0 / 5.0.0-beta.*
 
 Status: **`src/` done, verified locally and in real CI (PR #55 — all three legs + publish passed);
 integration tests blocked (see below)**
@@ -174,7 +188,7 @@ All builds below were run locally against the real feeds (`dotnet restore`/`dotn
 by CluedIn generation:
 - CluedIn 4.7.0/4.8.0 (net6.0) → **RestSharp 106.15.0** (legacy API: `Method.GET` uppercase enum,
   `client.ExecuteAsync<T>()` returns `IRestResponse<T>`)
-- CluedIn 5.0.0-alpha.* (net10.0) → **RestSharp 114.0.0** (rewritten API: `Method.Get` PascalCase,
+- CluedIn 5.0.0-beta.* (net10.0) → **RestSharp 114.0.0** (rewritten API: `Method.Get` PascalCase,
   `ExecuteAsync<T>()` returns `RestResponse<T>` directly, no `IRestResponse<T>` interface)
 
 `GoogleMapsExternalSearchProvider.cs` was written against the newer RestSharp API. Fixed with
@@ -186,7 +200,9 @@ explicitly-declared-type locals broke.
 
 Verified: both src projects (`ExternalSearch.Providers.GoogleMaps`,
 `Provider.ExternalSearch.GoogleMaps`) now build cleanly (0 errors) against all three targets:
-4.7.0/net6.0, 4.8.0/net6.0, 5.0.0-alpha.*/net10.0. Full solution build at the local-dev default
+4.7.0/net6.0, 4.8.0/net6.0, 5.0.0-beta.*/net10.0 (and, before the alpha→beta correction above,
+5.0.0-alpha.*/net10.0 too - RestSharp resolves to the same 114.0.0 either way, so the guards are
+unaffected by which 5.0 prerelease label is targeted). Full solution build at the local-dev default
 (net10.0) also still passes.
 
 ### Known limitation: integration tests can't build against the net6.0 legs at all
@@ -231,7 +247,7 @@ two.
 
 ## Checklist
 
-- [x] `azure-pipelines.yml` — switched to `crawler.build.jobs.yml` with `multiVersionCluedInTargets` (4.7.0, 4.8.0, 5.0.0-alpha.*) — schema verified against live template
+- [x] `azure-pipelines.yml` — switched to `crawler.build.jobs.yml` with `multiVersionCluedInTargets` (4.7.0, 4.8.0, 5.0.0-beta.* — corrected from 5.0.0-alpha.* post-merge, see note above) — schema verified against live template
 - [x] `Directory.Build.props` — honours `CluedInMultiVersionTargetFramework` with net10.0 local fallback; `LangVersion` pinned to 13.0
 - [x] `Packages.props` — renamed from lowercase; `_CluedIn` guarded; `DefineConstants` derived; `Microsoft.NET.Test.Sdk` / `xunit.runner.visualstudio` pinned per TFM
 - [x] `test/Directory.Build.props` — package refs removed, properties only
@@ -242,4 +258,5 @@ two.
 - [x] `GitVersion.yml` — `next-version: 1.0`; `ignore.commits-before: 2026-06-18T00:00:00`
 - [x] `src/` builds clean (0 errors) for all three legs, verified locally via real `dotnet restore`/`build`
 - [ ] Integration tests — **known gap**, not fixable from this repo (see Step 6); `runIntegrationTests` left at default `false`
-- [x] Push branch and confirm the actual Azure DevOps pipeline run is green end-to-end — PR #55, all three legs (4.7.0, 4.8.0, 5.0.0-alpha.*) plus the `Multi-version: publish` job passed in CI on the first run
+- [x] Push branch and confirm the actual Azure DevOps pipeline run is green end-to-end — PR #55, all three legs (4.7.0, 4.8.0, 5.0.0-alpha.* at the time) plus the `Multi-version: publish` job passed in CI on the first run
+- [ ] Re-confirm CI is still green after switching the third leg from 5.0.0-alpha.* to 5.0.0-beta.*
