@@ -8,6 +8,13 @@
     <_CluedInVersionOnly Condition="'$(_HyphenIndex)' != '-1'">$(_CluedIn.Substring(0, $(_HyphenIndex)))</_CluedInVersionOnly>
     <_CluedInVersionOnly Condition="'$(_HyphenIndex)' == '-1'">$(_CluedIn)</_CluedInVersionOnly>
 
+    <!-- CluedIn.Testing.Base/CluedIn.CrawlerIntegrationTesting are themselves multi-version
+         targeted: each CluedIn leg is published under a DIFFERENT PACKAGE ID suffixed with the
+         dotless Major.Minor.Patch (e.g. CluedIn.Testing.Base.470 for 4.7.0, .500 for 5.0.0-*) -
+         not one package ID with multiple versions. Confirmed against the actual develop feed, not
+         assumed - the suffix is the full 3-part version with dots stripped (".500", not ".50"). -->
+    <_CluedInPackageSuffix>$(_CluedInVersionOnly.Replace('.', ''))</_CluedInPackageSuffix>
+
     <!-- Gates conditional compilation (#if CLUEDIN_Vxx) for places where a CluedIn.Core API call
          differs across the targeted version range. -->
     <DefineConstants Condition="$([System.Version]::Parse($(_CluedInVersionOnly))) &gt;= $([System.Version]::Parse('4.7.0'))">$(DefineConstants);CLUEDIN_V47</DefineConstants>
@@ -29,13 +36,11 @@
     <PackageReference Update="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.8.2" Condition="!$(DefineConstants.Contains('CLUEDIN_V50'))" />
     <PackageReference Update="Moq" Version="4.13.1" />
-    <!-- Not tied to $(_CluedIn): CluedIn.Testing.Base/CluedIn.CrawlerIntegrationTesting were never
-         published for the 4.7.0/4.8.0 line (confirmed via restore - nearest available versions
-         there are ~4.0.0/4.5.0, well below what this repo's src/ needs). Integration tests always
-         run against the newest test-harness version regardless of which CluedIn.Core leg is being
-         built; see docs/multi-version-targeting-migration.md Step 6 for the implication this has
-         on integration testing older legs. -->
-    <PackageReference Update="CluedIn.Testing.Base" Version="5.0.0-*" />
+    <!-- CluedIn.Testing.Base/CluedIn.CrawlerIntegrationTesting are now multi-version targeted
+         (net6.0 for 4.7.0/4.8.0, net10.0 for 5.0.0-*) and publish as CluedIn.Testing.Base.470/
+         .480/.500 - see _CluedInPackageSuffix above. Update matches whichever suffixed name the
+         csproj's own Include (also built from $(_CluedInPackageSuffix)) resolves to for this leg. -->
+    <PackageReference Update="CluedIn.Testing.Base.$(_CluedInPackageSuffix)" Version="1.0.0-*" />
   </ItemGroup>
   <ItemGroup>
     <!--
@@ -43,7 +48,7 @@
         MUST SPECIFY IN CSPROJ AS <PackageReference Name="<depName>" />
     -->
     <PackageReference Update="CluedIn.Crawling" Version="$(_CluedIn)" />
-    <PackageReference Update="CluedIn.CrawlerIntegrationTesting" Version="5.0.0-*" />
+    <PackageReference Update="CluedIn.CrawlerIntegrationTesting.$(_CluedInPackageSuffix)" Version="1.0.0-*" />
     <PackageReference Update="CluedIn.Core" Version="$(_CluedIn)" />
     <PackageReference Update="CluedIn.ExternalSearch" Version="$(_CluedIn)" />
   </ItemGroup>

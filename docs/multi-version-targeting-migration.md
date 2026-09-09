@@ -123,9 +123,12 @@ Renamed `packages.props` → `Packages.props` (was lowercase; matches the casing
   (same pattern as the MasterDataServices/AzureEventHubs docs).
 - Pinned `Microsoft.NET.Test.Sdk` (18.3.0 / 17.12.0) and `xunit.runner.visualstudio` (3.1.5 / 2.8.2)
   conditionally on `CLUEDIN_V50`.
-- **Reverted an initial attempt** to tie `CluedIn.Testing.Base` / `CluedIn.CrawlerIntegrationTesting`
-  to `$(_CluedIn)` (which is what MasterDataServices does) — see Step 6's "Known limitation" below
-  for why that doesn't work here. Both stay hardcoded at `5.0.0-*`, same as before this migration.
+- `CluedIn.Testing.Base`/`CluedIn.CrawlerIntegrationTesting` were originally hardcoded at `5.0.0-*`
+  because neither was multi-version targeted yet (see Step 6 — this got fixed once both were
+  migrated in their own repos). Now reference the version-suffixed package IDs those repos actually
+  publish (`CluedIn.Testing.Base.$(_CluedInPackageSuffix)`, etc.) — **not** a single package ID with
+  `$(_CluedIn)` as the version, despite that being what the MasterDataServices doc's snippet shows.
+  See Step 6 for why.
 
 ---
 
@@ -176,8 +179,8 @@ restore -p:_CluedIn=4.7.0` and `4.8.0`, both succeeded immediately).
 
 ## Step 6 — API compatibility audit across 4.7.0 / 4.8.0 / 5.0.0-beta.*
 
-Status: **`src/` done, verified locally and in real CI (PR #55 — all three legs + publish passed);
-integration tests blocked (see below)**
+Status: **Done** — `src/` and integration tests both verified locally (build **and** `dotnet test`)
+and in real CI across all three legs.
 
 All builds below were run locally against the real feeds (`dotnet restore`/`dotnet build -p:_CluedIn=<v>
 -p:CluedInMultiVersionTargetFramework=<tfm>`), not just reasoned about.
@@ -205,26 +208,47 @@ Verified: both src projects (`ExternalSearch.Providers.GoogleMaps`,
 unaffected by which 5.0 prerelease label is targeted). Full solution build at the local-dev default
 (net10.0) also still passes.
 
-### Known limitation: integration tests can't build against the net6.0 legs at all
+### Resolved: integration tests now build and run against all three legs
 
-`CluedIn.Testing.Base` and `CluedIn.CrawlerIntegrationTesting` (used by
-`test/integration/Integration.Tests`) were **never published for the 4.x line** — confirmed via
-restore: querying `>= 4.7.0` found nothing between roughly 4.0.0/4.5.0 and 5.0.0-alpha in any feed.
-Even pinning them to a fixed `5.0.0-*` (their current/original value, reverted to in Step 3) doesn't
-help: those packages are **net10.0-only** — `NU1202: Package CluedIn.Testing.Base 5.0.0-alpha.5 is
-not compatible with net6.0`. This isn't a version-selection problem, it's a missing TFM entirely.
+Originally, `CluedIn.Testing.Base` and `CluedIn.CrawlerIntegrationTesting` (used by
+`test/integration/Integration.Tests`) were **net10.0-only** — `CluedIn.Testing.Base` had never been
+published for the 4.x line at all, and even pinning to a fixed version failed with
+`NU1202: Package CluedIn.Testing.Base 5.0.0-alpha.5 is not compatible with net6.0`. This was a
+missing TFM, not a version-selection problem, and not fixable from this repo — it required
+multi-version targeting the `crawler-testing` and `CluedIn.Testing.Base` repos themselves (their own
+`docs/multi-version-targeting-migration.md` cover that work; both merged and published as
+`1.0.0-beta.1`).
 
-Practical impact: **none by default.** `runIntegrationTests` defaults to `false`, and the jobs
-template's per-target unit-test step only looks at `test/unit` (which doesn't exist in this repo —
-see Step 4). Normal CI/PR builds only build+pack `src/` per leg, which works cleanly today. The gap
-only surfaces if someone sets `runIntegrationTests: true`, which would then fail to restore
-`test/integration` for the 4.7.0/4.8.0 legs specifically. This repo also has no working
-`build/integration-test.ps1` setup/teardown script today, so integration tests couldn't practically
-run in CI even before this migration.
+**Once both were published, a second problem surfaced**: they aren't a single package ID with
+`$(_CluedIn)` as the version (unlike `CluedIn.Core` etc.) — each CluedIn leg publishes under a
+**different package ID**, suffixed with the dotless `Major.Minor.Patch` (confirmed against the
+actual `develop` feed, not assumed from any doc): `CluedIn.Testing.Base.470`,
+`CluedIn.Testing.Base.480`, `CluedIn.Testing.Base.500` (**`.500`, not `.50`** — the reference docs'
+package-suffix tables are wrong here; the suffix is the literal 3-part version with dots stripped).
+Fixed by computing the suffix once in `Packages.props`:
 
-**Not fixable from this repo.** Multi-targeting `CluedIn.Testing.Base`/`CluedIn.CrawlerIntegrationTesting`
-to include net6.0 is a decision for whoever owns those packages (shared test-infra, not this repo).
-Until then, leave `runIntegrationTests` at its default `false` for this repo.
+```xml
+<_CluedInPackageSuffix>$(_CluedInVersionOnly.Replace('.', ''))</_CluedInPackageSuffix>
+...
+<PackageReference Update="CluedIn.Testing.Base.$(_CluedInPackageSuffix)" Version="1.0.0-*" />
+<PackageReference Update="CluedIn.CrawlerIntegrationTesting.$(_CluedInPackageSuffix)" Version="1.0.0-*" />
+```
+
+and referencing the same property-interpolated name in `Integration.Tests.csproj`'s own
+`PackageReference Include`s. The assembly/namespace inside each suffixed package is still plain
+`CluedIn.Testing.Base` (the suffix only applies to the outer `PackageId`, not `AssemblyName`), so no
+source changes were needed — only the package reference itself.
+
+Verified with real `dotnet test` runs (not just `dotnet build`) across all three legs — the one
+non-skipped test (`TestNoClueProduction`) passes on 4.7.0/net6.0, 4.8.0/net6.0, and
+5.0.0-beta.*/net10.0. The other two tests remain `[Theory(Skip = "Requires a working api key")]`,
+unrelated to this migration.
+
+**Pipeline enabled accordingly**: flipped `runIntegrationTests` default to `true` in
+`azure-pipelines.yml`, and removed the `createIntegrationEnvironmentScriptFilePath`/
+`Arguments` parameters — they pointed at a `./build/integration-test.ps1` that never existed in this
+repo, and none of the currently-runnable tests need any real environment setup (no external calls,
+no live CluedIn host — everything goes through `BaseExternalSearchTest`'s in-process mocks).
 
 ---
 
@@ -257,6 +281,7 @@ two.
 - [x] Source — `#if CLUEDIN_V50` guards added for the RestSharp 106↔114 API break (9 call sites in `GoogleMapsExternalSearchProvider.cs`)
 - [x] `GitVersion.yml` — `next-version: 1.0`; `ignore.commits-before: 2026-06-18T00:00:00`
 - [x] `src/` builds clean (0 errors) for all three legs, verified locally via real `dotnet restore`/`build`
-- [ ] Integration tests — **known gap**, not fixable from this repo (see Step 6); `runIntegrationTests` left at default `false`
+- [x] Integration tests — `CluedIn.Testing.Base`/`CluedIn.CrawlerIntegrationTesting` migrated in their own repos and published; `Packages.props`/`Integration.Tests.csproj` updated to reference the suffixed package IDs (`.470`/`.480`/`.500`); `runIntegrationTests` flipped to default `true`; dead `integration-test.ps1` script reference removed; real `dotnet test` passes on all three legs
 - [x] Push branch and confirm the actual Azure DevOps pipeline run is green end-to-end — PR #55, all three legs (4.7.0, 4.8.0, 5.0.0-alpha.* at the time) plus the `Multi-version: publish` job passed in CI on the first run
 - [x] Re-confirm CI is still green after switching the third leg from 5.0.0-alpha.* to 5.0.0-beta.* — re-ran on PR #55, all legs + publish passed again
+- [ ] Re-confirm CI is still green now that integration tests are enabled and the test-support package references changed

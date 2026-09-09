@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="CluedIn.CrawlerIntegrationTesting" />
-    <PackageReference Include="CluedIn.Testing.Base" />
+    <!-- Suffixed per multi-version leg (e.g. CluedIn.Testing.Base.470) - see Packages.props'
+         _CluedInPackageSuffix for why these aren't plain "CluedIn.Testing.Base"/
+         "CluedIn.CrawlerIntegrationTesting". -->
+    <PackageReference Include="CluedIn.CrawlerIntegrationTesting.$(_CluedInPackageSuffix)" />
+    <PackageReference Include="CluedIn.Testing.Base.$(_CluedInPackageSuffix)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="coverlet.msbuild" />
     <PackageReference Include="Moq" />

@@ -3,7 +3,7 @@ parameters:
   - name: runIntegrationTests
     displayName: Run Integration Tests
     type: boolean
-    default: false
+    default: true
 
   - name: pipelineTemplateRef
     displayName: Pipeline Template Ref
@@ -61,11 +61,11 @@ jobs:
         vmImage: 'ubuntu-22.04'
       githubReleaseInMaster: true
       publicReleaseForMaster: true
+      # No environment setup/teardown script: the integration test project only exercises
+      # BaseExternalSearchTest's in-process mocks (no external Google Maps calls, no real CluedIn
+      # host), so there's no real environment to set up. The two tests that do need a live API key
+      # are already marked [Theory(Skip = "Requires a working api key")] in GoogleMapsTests.cs.
       executeIntegrationTests: ${{ parameters.runIntegrationTests }}
-      createIntegrationEnvironmentScriptFilePath: "./build/integration-test.ps1"
-      createIntegrationEnvironmentScriptArguments: "-Action SetUp"
-      deleteIntegrationEnvironmentScriptFilePath: "./build/integration-test.ps1"
-      deleteIntegrationEnvironmentScriptArguments: "-Action TearDown"
       publishCodeCoverage: true
       useGitVersionDotNetTool: true
       publishToDevFeed: true
