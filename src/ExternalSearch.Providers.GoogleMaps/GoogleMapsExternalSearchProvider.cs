@@ -310,7 +310,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             const string placeDetailsEndpoint = $"place/details/{output}?";
             const string placeIdEndpoint = $"place/textsearch/{output}?";
 
+#if CLUEDIN_V50
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.Get);
+#else
+            var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
+#endif
             placeIdRequest.AddQueryParameter("key", apiToken);
 
             if (query.QueryParameters.ContainsKey("companyName") || query.QueryParameters.ContainsKey("companyAddress"))
@@ -340,7 +344,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 }
             }
 
+#if CLUEDIN_V50
             RestResponse<PlaceIdResponse> placeIdResponse = null;
+#else
+            IRestResponse<PlaceIdResponse> placeIdResponse = null;
+#endif
 
             try
             {
@@ -378,8 +386,12 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             {
                 if (!isCompany)
                 {
-                    var request = new RestRequest(placeDetailsEndpoint);
-                    foreach (var placeId in placeResults)
+#if CLUEDIN_V50
+                    var request = new RestRequest(placeDetailsEndpoint, Method.Get);
+#else
+                    var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+#endif
+                    foreach (var placeId in placeIdResponse.Data.Results)
                     {
                         request.AddQueryParameter("place_id", placeId.PlaceId);
                         request.AddQueryParameter("key", apiToken);
@@ -415,14 +427,22 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 }
                 else
                 {
+#if CLUEDIN_V50
                     var request = new RestRequest(placeDetailsEndpoint, Method.Get);
+#else
+                    var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+#endif
                     foreach (var placeId in placeResults)
                     {
                         request.AddQueryParameter("place_id", placeId.PlaceId);
                         request.AddQueryParameter("key", apiToken);
                     }
 
+#if CLUEDIN_V50
                     RestResponse<CompanyDetailsResponse> response = null;
+#else
+                    IRestResponse<CompanyDetailsResponse> response = null;
+#endif
 
                     try
                     {
@@ -525,11 +545,19 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             const string placeDetailsEndpoint = $"place/details/{output}?";
             const string placeIdEndpoint = $"place/textsearch/{output}?";
 
+#if CLUEDIN_V50
             var placeIdRequest = new RestRequest(placeIdEndpoint, Method.Get);
+#else
+            var placeIdRequest = new RestRequest(placeIdEndpoint, Method.GET);
+#endif
             placeIdRequest.AddQueryParameter("key", apiToken);
             placeIdRequest.AddQueryParameter("query", "Google 1600 Amphitheatre Parkway, Mountain View, CA 94043.");
 
+#if CLUEDIN_V50
             RestResponse<PlaceIdResponse> placeIdResponse;
+#else
+            IRestResponse<PlaceIdResponse> placeIdResponse;
+#endif
             try
             {
                placeIdResponse = client.ExecuteAsync<PlaceIdResponse>(placeIdRequest).Result;
@@ -547,14 +575,22 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             if (placeIdResponse.StatusCode != HttpStatusCode.OK)
                 return new ConnectionVerificationResult(true, string.Empty);
 
+#if CLUEDIN_V50
             var request = new RestRequest(placeDetailsEndpoint, Method.Get);
+#else
+            var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+#endif
             foreach (var placeId in placeIdResponse.Data.Results)
             {
                 request.AddQueryParameter("place_id", placeId.PlaceId);
                 request.AddQueryParameter("key", apiToken);
             }
 
+#if CLUEDIN_V50
             RestResponse<CompanyDetailsResponse> response;
+#else
+            IRestResponse<CompanyDetailsResponse> response;
+#endif
 
             try
             {
@@ -568,7 +604,11 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             return ConstructVerifyConnectionResponse(response);
         }
 
+#if CLUEDIN_V50
         private static ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(RestResponse<T> response)
+#else
+        private static ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(IRestResponse<T> response)
+#endif
         {
             var errorMessageBase = $"{ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
 
