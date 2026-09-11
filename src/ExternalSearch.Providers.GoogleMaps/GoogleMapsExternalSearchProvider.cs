@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 {
@@ -345,15 +346,15 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
 
 #if CLUEDIN_V50
-            RestResponse<PlaceIdResponse> placeIdResponse = null;
+            RestResponse placeIdResponse = null;
 #else
-            IRestResponse<PlaceIdResponse> placeIdResponse = null;
+            IRestResponse placeIdResponse = null;
 #endif
 
             try
             {
                 context.Log.LogTrace($"Making Google Maps call. Request: {JsonUtility.Serialize(placeIdRequest.Parameters)}" );
-                placeIdResponse = client.ExecuteAsync<PlaceIdResponse>(placeIdRequest).Result;
+                placeIdResponse = client.ExecuteAsync(placeIdRequest).Result;
             }
             catch(Exception exception)
             {
@@ -365,7 +366,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 yield break;
             }
 
-            switch (placeIdResponse.Data.Status)
+            var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
+
+            switch (placeIdResponseData?.Status)
             {
                 case GoogleMapsResponseStatus.ZeroResults:
                     context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
@@ -375,23 +378,31 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     yield break;
             }
 
+            var placeResults = placeIdResponseData?.Results;
+            if (placeResults is not { Count: > 0 })
+            {
+                context.Log.LogInformation("Google Maps returned no place results.");
+                yield break;
+            }
+
             if (placeIdResponse.StatusCode == HttpStatusCode.OK)
             {
-                if (placeIdResponse.Data != null && isCompany == false)
+                if (!isCompany)
                 {
 #if CLUEDIN_V50
                     var request = new RestRequest(placeDetailsEndpoint, Method.Get);
 #else
                     var request = new RestRequest(placeDetailsEndpoint, Method.GET);
 #endif
-                    foreach (var placeId in placeIdResponse.Data.Results)
+                    foreach (var placeId in placeIdResponseData.Results)
                     {
-                        request.AddParameter("placeid", placeId.PlaceId);
-                        request.AddParameter("key", apiToken);
+                        request.AddQueryParameter("place_id", placeId.PlaceId);
+                        request.AddQueryParameter("key", apiToken);
                     }
 
-                    var response = client.ExecuteAsync<LocationDetailsResponse>(request).Result;
-                    switch (response.Data.Status)
+                    var response = client.ExecuteAsync(request).Result;
+                    var responseData = JsonConvert.DeserializeObject<LocationDetailsResponse>(response.Content);
+                    switch (responseData?.Status)
                     {
                         case GoogleMapsResponseStatus.ZeroResults:
                             context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
@@ -405,8 +416,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     {
                         case HttpStatusCode.OK:
                         {
-                            if (response.Data != null)
-                                yield return new ExternalSearchQueryResult<LocationDetailsResponse>(query, response.Data);
+                            if (responseData != null)
+                                yield return new ExternalSearchQueryResult<LocationDetailsResponse>(query, responseData);
                             break;
                         }
                         default:
@@ -425,29 +436,31 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 #else
                     var request = new RestRequest(placeDetailsEndpoint, Method.GET);
 #endif
-                    foreach (var placeId in placeIdResponse.Data.Results)
+                    foreach (var placeId in placeResults)
                     {
-                        request.AddParameter("placeid", placeId.PlaceId);
-                        request.AddParameter("key", apiToken);
+                        request.AddQueryParameter("place_id", placeId.PlaceId);
+                        request.AddQueryParameter("key", apiToken);
                     }
 
 #if CLUEDIN_V50
-                    RestResponse<CompanyDetailsResponse> response = null;
+                    RestResponse response = null;
 #else
-                    IRestResponse<CompanyDetailsResponse> response = null;
+                    IRestResponse response = null;
 #endif
 
                     try
                     {
                         context.Log.LogTrace($"Making Google Maps call. Request: {JsonUtility.Serialize(request.Parameters)}");
-                        response = client.ExecuteAsync<CompanyDetailsResponse>(request).Result;
+                        response = client.ExecuteAsync(request).Result;
                     }
                     catch(Exception exception)
                     {
                         context.Log.LogWarning($"Could not fetch CompanyDetailsResponse from Google Maps. Exception: {exception}");
                     }
 
-                    switch (response?.Data.Status)
+                    var responseData = JsonConvert.DeserializeObject<CompanyDetailsResponse>(response?.Content);
+
+                    switch (responseData?.Status)
                     {
                         case GoogleMapsResponseStatus.ZeroResults:
                             context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
@@ -461,8 +474,8 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     {
                         case HttpStatusCode.OK:
                         {
-                            if (response.Data != null)
-                                yield return new ExternalSearchQueryResult<CompanyDetailsResponse>(query, response.Data);
+                            if (responseData != null)
+                                yield return new ExternalSearchQueryResult<CompanyDetailsResponse>(query, responseData);
                             break;
                         }
                         default:
@@ -547,13 +560,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             placeIdRequest.AddQueryParameter("query", "Google 1600 Amphitheatre Parkway, Mountain View, CA 94043.");
 
 #if CLUEDIN_V50
-            RestResponse<PlaceIdResponse> placeIdResponse;
+            RestResponse placeIdResponse;
 #else
-            IRestResponse<PlaceIdResponse> placeIdResponse;
+            IRestResponse placeIdResponse;
 #endif
             try
             {
-               placeIdResponse = client.ExecuteAsync<PlaceIdResponse>(placeIdRequest).Result;
+               placeIdResponse = client.ExecuteAsync(placeIdRequest).Result;
             }
             catch (Exception exception)
             {
@@ -562,7 +575,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 
             if (!placeIdResponse.IsSuccessful)
             {
-                return ConstructVerifyConnectionResponse(placeIdResponse);
+                return ConstructVerifyConnectionResponse(placeIdResponse, null);
             }
 
             if (placeIdResponse.StatusCode != HttpStatusCode.OK)
@@ -573,34 +586,35 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 #else
             var request = new RestRequest(placeDetailsEndpoint, Method.GET);
 #endif
-            foreach (var placeId in placeIdResponse.Data.Results)
+            var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
+            foreach (var placeId in placeIdResponseData.Results)
             {
-                request.AddParameter("placeid", placeId.PlaceId);
-                request.AddParameter("key", apiToken);
+                request.AddQueryParameter("place_id", placeId.PlaceId);
+                request.AddQueryParameter("key", apiToken);
             }
 
 #if CLUEDIN_V50
-            RestResponse<CompanyDetailsResponse> response;
+            RestResponse response;
 #else
-            IRestResponse<CompanyDetailsResponse> response;
+            IRestResponse response;
 #endif
 
             try
             {
-                response = client.ExecuteAsync<CompanyDetailsResponse>(request).Result;
+                response = client.ExecuteAsync(request).Result;
             }
             catch (Exception exception)
             {
                 return new ConnectionVerificationResult(false, $"Could not fetch CompanyDetailsResponse from Google Maps. {exception}");
             }
 
-            return ConstructVerifyConnectionResponse(response);
+            return ConstructVerifyConnectionResponse(response, JsonConvert.DeserializeObject<CompanyDetailsResponse>(response.Content));
         }
 
 #if CLUEDIN_V50
-        private static ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(RestResponse<T> response)
+        private static ConnectionVerificationResult ConstructVerifyConnectionResponse(RestResponse response, dynamic responseData)
 #else
-        private static ConnectionVerificationResult ConstructVerifyConnectionResponse<T>(IRestResponse<T> response)
+        private static ConnectionVerificationResult ConstructVerifyConnectionResponse(IRestResponse response, dynamic responseData)
 #endif
         {
             var errorMessageBase = $"{ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
@@ -613,7 +627,6 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 );
             }
 
-            dynamic responseData = response.Data;
             if (responseData != null && responseData.Status != null &&
                 responseData.Status.Equals(GoogleMapsResponseStatus.RequestDenied) || response.StatusCode == HttpStatusCode.Unauthorized)
             {
