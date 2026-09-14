@@ -586,8 +586,13 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
 #else
             var request = new RestRequest(placeDetailsEndpoint, Method.GET);
 #endif
-            var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
-            foreach (var placeId in placeIdResponseData.Results)
+var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
+if (placeIdResponseData?.Results is not { Count: > 0 })
+{
+    return new ConnectionVerificationResult(false, "Google Maps returned no place results.");
+}
+
+foreach (var placeId in placeIdResponseData.Results)
             {
                 request.AddQueryParameter("place_id", placeId.PlaceId);
                 request.AddQueryParameter("key", apiToken);
