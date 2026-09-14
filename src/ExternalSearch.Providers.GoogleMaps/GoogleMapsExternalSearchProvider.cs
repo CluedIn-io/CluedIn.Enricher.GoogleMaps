@@ -403,7 +403,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                         request.AddQueryParameter("key", apiToken);
 
                         var response = client.ExecuteAsync(request).Result;
-                        var responseData = response.StatusCode == HttpStatusCode.OK
+                        var responseData = response.StatusCode == HttpStatusCode.OK && !string.IsNullOrWhiteSpace(response.Content)
                             ? JsonConvert.DeserializeObject<LocationDetailsResponse>(response.Content)
                             : null;
                         switch (responseData?.Status)
@@ -462,7 +462,7 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                             context.Log.LogWarning($"Could not fetch CompanyDetailsResponse from Google Maps. Exception: {exception}");
                         }
 
-                        var responseData = response?.StatusCode == HttpStatusCode.OK
+                        var responseData = response?.StatusCode == HttpStatusCode.OK && !string.IsNullOrWhiteSpace(response.Content)
                             ? JsonConvert.DeserializeObject<CompanyDetailsResponse>(response.Content)
                             : null;
 
@@ -588,7 +588,20 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             if (placeIdResponse.StatusCode != HttpStatusCode.OK)
                 return new ConnectionVerificationResult(true, string.Empty);
 
-            var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
+            if (string.IsNullOrWhiteSpace(placeIdResponse.Content))
+                return new ConnectionVerificationResult(false, "Google Maps returned an empty place search response.");
+
+            var placeIdResponseData = placeIdResponse.StatusCode == HttpStatusCode.OK && !string.IsNullOrWhiteSpace(placeIdResponse.Content)
+                ? JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content)
+                : null;
+            switch (placeIdResponseData?.Status)
+            {
+                case GoogleMapsResponseStatus.ZeroResults:
+                    return new ConnectionVerificationResult(false, "Google Maps returned ZERO RESULTS for the verification search.");
+                case GoogleMapsResponseStatus.RequestDenied:
+                    return new ConnectionVerificationResult(false, "Google Maps returned REQUEST DENIED. Please verify the API Key.");
+            }
+
             if (placeIdResponseData?.Results is not { Count: > 0 })
             {
                 return new ConnectionVerificationResult(false, "Google Maps returned no place results.");
@@ -619,9 +632,21 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                     return new ConnectionVerificationResult(false, $"Could not fetch CompanyDetailsResponse from Google Maps. {exception}");
                 }
 
-                var responseData = response.StatusCode == HttpStatusCode.OK
+                if (string.IsNullOrWhiteSpace(response.Content))
+                    return new ConnectionVerificationResult(false, "Google Maps returned an empty place details response.");
+
+                var responseData = response.StatusCode == HttpStatusCode.OK && !string.IsNullOrWhiteSpace(response.Content)
                     ? JsonConvert.DeserializeObject<CompanyDetailsResponse>(response.Content)
                     : null;
+
+                switch (responseData?.Status)
+                {
+                    case GoogleMapsResponseStatus.ZeroResults:
+                        return new ConnectionVerificationResult(false, "Google Maps returned ZERO RESULTS for the verification details request.");
+                    case GoogleMapsResponseStatus.RequestDenied:
+                        return new ConnectionVerificationResult(false, "Google Maps returned REQUEST DENIED. Please verify the API Key.");
+                }
+
                 var verificationResult = ConstructVerifyConnectionResponse(response, responseData);
                 if (!verificationResult.Success)
                     return verificationResult;
