@@ -174,7 +174,7 @@ public class Result
     public PlusCode PlusCode { get; set; }
 
     [JsonProperty("rating")]
-    public int Rating { get; set; }
+    public double Rating { get; set; }
 
     [JsonProperty("reference")]
     public string Reference { get; set; }
