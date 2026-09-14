@@ -366,9 +366,10 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 yield break;
             }
 
-if (string.IsNullOrWhiteSpace(placeIdResponse.Content))
-    yield break;
-var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
+            if (string.IsNullOrWhiteSpace(placeIdResponse.Content))
+                yield break;
+
+            var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
 
             switch (placeIdResponseData?.Status)
             {
@@ -391,101 +392,105 @@ var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeId
             {
                 if (!isCompany)
                 {
-#if CLUEDIN_V50
-                    var request = new RestRequest(placeDetailsEndpoint, Method.Get);
-#else
-                    var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-#endif
-                    foreach (var placeId in placeIdResponseData.Results)
+                    foreach (var placeId in placeResults)
                     {
+#if CLUEDIN_V50
+                        var request = new RestRequest(placeDetailsEndpoint, Method.Get);
+#else
+                        var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+#endif
                         request.AddQueryParameter("place_id", placeId.PlaceId);
                         request.AddQueryParameter("key", apiToken);
-                    }
 
-                    var response = client.ExecuteAsync(request).Result;
-                    var responseData = JsonConvert.DeserializeObject<LocationDetailsResponse>(response.Content);
-                    switch (responseData?.Status)
-                    {
-                        case GoogleMapsResponseStatus.ZeroResults:
-                            context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
-                            yield break;
-                        case GoogleMapsResponseStatus.RequestDenied:
-                            context.Log.LogWarning("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
-                            yield break;
-                    }
-
-                    switch (response.StatusCode)
-                    {
-                        case HttpStatusCode.OK:
+                        var response = client.ExecuteAsync(request).Result;
+                        var responseData = response.StatusCode == HttpStatusCode.OK
+                            ? JsonConvert.DeserializeObject<LocationDetailsResponse>(response.Content)
+                            : null;
+                        switch (responseData?.Status)
                         {
-                            if (responseData != null)
-                                yield return new ExternalSearchQueryResult<LocationDetailsResponse>(query, responseData);
-                            break;
+                            case GoogleMapsResponseStatus.ZeroResults:
+                                context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
+                                continue;
+                            case GoogleMapsResponseStatus.RequestDenied:
+                                context.Log.LogWarning("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
+                                yield break;
                         }
-                        default:
-                        {
-                            if (response.ErrorException != null)
-                                throw new AggregateException(response.ErrorException.Message, response.ErrorException);
 
-                            throw new ApplicationException("Could not execute external search query - StatusCode:" + response.StatusCode + "; Content: " + response.Content);
+                        switch (response.StatusCode)
+                        {
+                            case HttpStatusCode.OK:
+                            {
+                                if (responseData != null)
+                                    yield return new ExternalSearchQueryResult<LocationDetailsResponse>(query, responseData);
+                                break;
+                            }
+                            default:
+                            {
+                                if (response.ErrorException != null)
+                                    throw new AggregateException(response.ErrorException.Message, response.ErrorException);
+
+                                throw new ApplicationException("Could not execute external search query - StatusCode:" + response.StatusCode + "; Content: " + response.Content);
+                            }
                         }
                     }
                 }
                 else
                 {
-#if CLUEDIN_V50
-                    var request = new RestRequest(placeDetailsEndpoint, Method.Get);
-#else
-                    var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-#endif
                     foreach (var placeId in placeResults)
                     {
+#if CLUEDIN_V50
+                        var request = new RestRequest(placeDetailsEndpoint, Method.Get);
+#else
+                        var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+#endif
                         request.AddQueryParameter("place_id", placeId.PlaceId);
                         request.AddQueryParameter("key", apiToken);
-                    }
 
 #if CLUEDIN_V50
-                    RestResponse response = null;
+                        RestResponse response = null;
 #else
-                    IRestResponse response = null;
+                        IRestResponse response = null;
 #endif
 
-                    try
-                    {
-                        context.Log.LogTrace($"Making Google Maps call. Request: {JsonUtility.Serialize(request.Parameters)}");
-                        response = client.ExecuteAsync(request).Result;
-                    }
-                    catch(Exception exception)
-                    {
-                        context.Log.LogWarning($"Could not fetch CompanyDetailsResponse from Google Maps. Exception: {exception}");
-                    }
-
-                    var responseData = JsonConvert.DeserializeObject<CompanyDetailsResponse>(response?.Content);
-
-                    switch (responseData?.Status)
-                    {
-                        case GoogleMapsResponseStatus.ZeroResults:
-                            context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
-                            yield break;
-                        case GoogleMapsResponseStatus.RequestDenied:
-                            context.Log.LogWarning("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
-                            yield break;
-                    }
-
-                    switch (response?.StatusCode)
-                    {
-                        case HttpStatusCode.OK:
+                        try
                         {
-                            if (responseData != null)
-                                yield return new ExternalSearchQueryResult<CompanyDetailsResponse>(query, responseData);
-                            break;
+                            context.Log.LogTrace($"Making Google Maps call. Request: {JsonUtility.Serialize(request.Parameters)}");
+                            response = client.ExecuteAsync(request).Result;
                         }
-                        default:
+                        catch(Exception exception)
                         {
-                            if (response?.ErrorException != null)
-                                throw new AggregateException(response.ErrorException.Message, response.ErrorException);
+                            context.Log.LogWarning($"Could not fetch CompanyDetailsResponse from Google Maps. Exception: {exception}");
+                        }
 
-                            throw new ApplicationException("Could not execute external search query - StatusCode:" + response?.StatusCode + "; Content: " + response?.Content);
+                        var responseData = response?.StatusCode == HttpStatusCode.OK
+                            ? JsonConvert.DeserializeObject<CompanyDetailsResponse>(response.Content)
+                            : null;
+
+                        switch (responseData?.Status)
+                        {
+                            case GoogleMapsResponseStatus.ZeroResults:
+                                context.Log.LogInformation("ZERO RESULTS returned by Google Maps. No results returned.");
+                                continue;
+                            case GoogleMapsResponseStatus.RequestDenied:
+                                context.Log.LogWarning("REQUEST DENIED returned by Google Maps. Please verify the API Key.");
+                                yield break;
+                        }
+
+                        switch (response?.StatusCode)
+                        {
+                            case HttpStatusCode.OK:
+                            {
+                                if (responseData != null)
+                                    yield return new ExternalSearchQueryResult<CompanyDetailsResponse>(query, responseData);
+                                break;
+                            }
+                            default:
+                            {
+                                if (response?.ErrorException != null)
+                                    throw new AggregateException(response.ErrorException.Message, response.ErrorException);
+
+                                throw new ApplicationException("Could not execute external search query - StatusCode:" + response?.StatusCode + "; Content: " + response?.Content);
+                            }
                         }
                     }
                 }
@@ -583,39 +588,46 @@ var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeId
             if (placeIdResponse.StatusCode != HttpStatusCode.OK)
                 return new ConnectionVerificationResult(true, string.Empty);
 
-#if CLUEDIN_V50
-            var request = new RestRequest(placeDetailsEndpoint, Method.Get);
-#else
-            var request = new RestRequest(placeDetailsEndpoint, Method.GET);
-#endif
-var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
-if (placeIdResponseData?.Results is not { Count: > 0 })
-{
-    return new ConnectionVerificationResult(false, "Google Maps returned no place results.");
-}
-
-foreach (var placeId in placeIdResponseData.Results)
+            var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
+            if (placeIdResponseData?.Results is not { Count: > 0 })
             {
+                return new ConnectionVerificationResult(false, "Google Maps returned no place results.");
+            }
+
+            foreach (var placeId in placeIdResponseData.Results)
+            {
+#if CLUEDIN_V50
+                var request = new RestRequest(placeDetailsEndpoint, Method.Get);
+#else
+                var request = new RestRequest(placeDetailsEndpoint, Method.GET);
+#endif
                 request.AddQueryParameter("place_id", placeId.PlaceId);
                 request.AddQueryParameter("key", apiToken);
-            }
 
 #if CLUEDIN_V50
-            RestResponse response;
+                RestResponse response;
 #else
-            IRestResponse response;
+                IRestResponse response;
 #endif
 
-            try
-            {
-                response = client.ExecuteAsync(request).Result;
-            }
-            catch (Exception exception)
-            {
-                return new ConnectionVerificationResult(false, $"Could not fetch CompanyDetailsResponse from Google Maps. {exception}");
+                try
+                {
+                    response = client.ExecuteAsync(request).Result;
+                }
+                catch (Exception exception)
+                {
+                    return new ConnectionVerificationResult(false, $"Could not fetch CompanyDetailsResponse from Google Maps. {exception}");
+                }
+
+                var responseData = response.StatusCode == HttpStatusCode.OK
+                    ? JsonConvert.DeserializeObject<CompanyDetailsResponse>(response.Content)
+                    : null;
+                var verificationResult = ConstructVerifyConnectionResponse(response, responseData);
+                if (!verificationResult.Success)
+                    return verificationResult;
             }
 
-            return ConstructVerifyConnectionResponse(response, JsonConvert.DeserializeObject<CompanyDetailsResponse>(response.Content));
+            return new ConnectionVerificationResult(true, string.Empty);
         }
 
 #if CLUEDIN_V50
