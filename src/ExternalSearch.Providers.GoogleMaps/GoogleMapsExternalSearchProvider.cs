@@ -366,7 +366,9 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
                 yield break;
             }
 
-            var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
+if (string.IsNullOrWhiteSpace(placeIdResponse.Content))
+    yield break;
+var placeIdResponseData = JsonConvert.DeserializeObject<PlaceIdResponse>(placeIdResponse.Content);
 
             switch (placeIdResponseData?.Status)
             {
