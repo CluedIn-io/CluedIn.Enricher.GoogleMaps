@@ -5,13 +5,6 @@
     <ItemGroup>
         <EmbeddedResource Include="Resources\Google_Maps_icon_2020.svg" />
     </ItemGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <LangVersion>preview</LangVersion>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <LangVersion>preview</LangVersion>
-    </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CluedIn.ExternalSearch" />
         <PackageReference Include="CluedIn.Crawling" />

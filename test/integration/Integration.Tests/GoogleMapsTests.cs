@@ -6,7 +6,6 @@ using CluedIn.ExternalSearch.Providers.GoogleMaps;
 using CluedIn.Testing.Base.ExternalSearch;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 //using TestContext = CluedIn.Tests.Unit.TestContext;
 
 namespace CluedIn.Tests.Integration.ExternalSearch

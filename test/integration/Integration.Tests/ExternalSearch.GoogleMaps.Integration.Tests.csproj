@@ -1,8 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="CluedIn.CrawlerIntegrationTesting" />
-    <PackageReference Include="CluedIn.Testing.Base" />
+    <!-- Suffixed per multi-version leg (e.g. CluedIn.Testing.Base.470) - see Packages.props'
+         _CluedInPackageSuffix for why these aren't plain "CluedIn.Testing.Base"/
+         "CluedIn.CrawlerIntegrationTesting". -->
+    <PackageReference Include="CluedIn.CrawlerIntegrationTesting.$(_CluedInPackageSuffix)" />
+    <PackageReference Include="CluedIn.Testing.Base.$(_CluedInPackageSuffix)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="coverlet.msbuild" />
+    <PackageReference Include="Moq" />
   </ItemGroup>
+
+  <!-- xunit v3 + Microsoft Testing Platform tooling for net10.0 (CluedIn 5.0+) -->
+  <ItemGroup Condition="$(DefineConstants.Contains('CLUEDIN_V50'))">
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="AutoFixture.Xunit3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <!-- xunit v2 + AutoFixture.Xunit2 for net6.0 (CluedIn < 5.0) -->
+  <ItemGroup Condition="!$(DefineConstants.Contains('CLUEDIN_V50'))">
+    <PackageReference Include="xunit" />
+    <PackageReference Include="AutoFixture.Xunit2" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\ExternalSearch.Providers.GoogleMaps\ExternalSearch.Providers.GoogleMaps.csproj" />
   </ItemGroup>
