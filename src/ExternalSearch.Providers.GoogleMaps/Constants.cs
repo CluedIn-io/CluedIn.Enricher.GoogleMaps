@@ -208,6 +208,39 @@ namespace CluedIn.ExternalSearch.Providers.GoogleMaps
             }
         };
 
+        private static Dictionary<string, object> CreateFieldGroup(string id, string label, params string[] fields) => new()
+        {
+            ["id"] = id,
+            ["label"] = label,
+            ["fields"] = fields,
+        };
+
+        /// <summary>
+        /// The sections the UI groups the configuration fields into, in order. Fields no group lists
+        /// (such as the filter and rate limit settings added by CluedIn) go to the last group.
+        /// </summary>
+        public static readonly Dictionary<string, object>[] FieldGroups =
+        [
+            CreateFieldGroup("connection", "Connection", KeyName.ApiToken),
+            CreateFieldGroup("whatToEnrich", "What to enrich", KeyName.AcceptedEntityType, "enricherRuleCondition", KeyName.ControlFlag),
+            CreateFieldGroup(
+                "fieldMapping",
+                "Field mapping",
+                KeyName.OrgNameKey,
+                KeyName.OrgAddressKey,
+                KeyName.OrgCityKey,
+                KeyName.OrgZipCodeKey,
+                KeyName.OrgStateKey,
+                KeyName.OrgCountryKey,
+                KeyName.LocationAddressKey,
+                KeyName.UserAddressKey,
+                KeyName.PersonAddressKey,
+                KeyName.PersonAddressCityKey,
+                KeyName.LatitudeKey,
+                KeyName.LongitudeKey),
+            CreateFieldGroup("advanced", "Advanced"),
+        ];
+
         public static IEnumerable<Control> Properties { get; set; } = new List<Control>()
         {
             // NOTE: Leaving this commented as an example - BF
