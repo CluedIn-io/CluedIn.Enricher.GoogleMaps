@@ -134,5 +134,6 @@ public class GoogleMapsSearchProviderProvider : ProviderBase, IExtendedProviderM
         { "vocabKeyPrefix", GoogleMapsVocabulary.Organization.KeyPrefix},
         { "autoSubmission", false },
         { "dataSourceSetId", string.Empty },
+        { "fieldGroups", Constants.FieldGroups }, // for UI
     };
 }
